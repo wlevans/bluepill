@@ -15,7 +15,8 @@ RTOS := ../rtos
 BLUEPILL := ../bluepill
 
 # Source files.
-SRCFILES  = main.c opencm3.c ${RTOS}/heap_3.c ${RTOS}/list.c ${RTOS}/port.c ${RTOS}/queue.c ${RTOS}/tasks.c
+SRCFILES  = main.c
+SRCFILES += ${RTOS}/heap_3.c ${RTOS}/list.c ${RTOS}/port.c ${RTOS}/queue.c ${RTOS}/tasks.c
 SRCFILES += ${BLUEPILL}/led.c ${BLUEPILL}/bluepill.c
 
 # Object file(s) to build.
