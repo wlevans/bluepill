@@ -86,10 +86,6 @@ TGT_LDFLAGS += $(DEBUG)
 TGT_LDFLAGS += -Wl,-Map=$(*).map
 TGT_LDFLAGS += -Wl,--cref
 TGT_LDFLAGS += -Wl,--gc-sections
-# What does this do?
-ifeq ($(V),99)
-TGT_LDFLAGS += -Wl,--print-gc-sections
-endif
 
 # Used libraries.
 LDLIBS += -specs=nosys.specs
@@ -98,7 +94,6 @@ LDLIBS += -L$(LIBOPENCM3)/lib
 LDLIBS += -l$(LIBNAME)
 
 .SUFFIXES: .elf .bin .hex .srec .list .map .images
-# What are these for?
 .SECONDEXPANSION:
 .SECONDARY:
 
