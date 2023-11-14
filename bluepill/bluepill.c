@@ -1,7 +1,6 @@
 #include "bluepill.h"
 
 #include <libopencm3/stm32/rcc.h>
-#include <libopencm3/stm32/gpio.h>
 
 inline void board_init(void)
 {
