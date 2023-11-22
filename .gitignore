@@ -1,5 +1,12 @@
+# Makefile generated outputs.
 *.elf
 *.map
 *.d
 *.o
 *.bin
+
+# Eclipse files and directories.
+.metadata
+.settings/
+.cproject
+.project
