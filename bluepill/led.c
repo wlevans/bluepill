@@ -38,7 +38,5 @@ inline void led_toggle(void)
 
 inline bool led_get(void)
 {
-	uint16_t state = gpio_get(LED_PORT, LED_PIN);
-	//return !gpio_get(LED_PORT, LED_PIN);
-	return state;
+	return !gpio_get(LED_PORT, LED_PIN);
 }
