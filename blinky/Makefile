@@ -140,7 +140,7 @@ clobber : clean
 
 # Flash device.
 flash : $(BINARY).bin
-	$(STFLASH) $(FLASHSIZE) write $(BINARY).bin 0x08000000
+	$(STFLASH) $(FLASHSIZE) --reset write $(BINARY).bin 0x08000000
 
 .PHONY : images clean elf bin hex srec list all
 
