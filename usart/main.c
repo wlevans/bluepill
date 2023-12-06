@@ -2,24 +2,12 @@
 #include "task.h"
 
 #include "bluepill.h"
-#include "led.h"
+#include "usart.h"
 
 static void blink(void *args __attribute((unused)))
 {
 	while(1)
-	{
-		led_toggle();
-		if(led_get())
-		{
-			// If LED is on.
-			vTaskDelay(pdMS_TO_TICKS(250));
-		}
-		else
-		{
-			// If LED is off.
-			vTaskDelay(pdMS_TO_TICKS(750));
-		}
-	}
+
 	return;
 }
 
@@ -28,8 +16,8 @@ int main(void)
 	// Set up board.
 	board_init();
 
-	// Initialize LED.
-	led_init();
+	// Set up USART 1
+	usart_init(1, 38000, 8, USART_PARITY_NONE, 2, false);
 
 	// Create FreeRTOS task.
 	xTaskCreate(blink, "blink", 100, NULL, configMAX_PRIORITIES - 1, NULL);

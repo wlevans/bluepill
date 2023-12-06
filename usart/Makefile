@@ -17,7 +17,7 @@ BLUEPILL := ../bluepill
 # Source files.
 SRCFILES  = main.c
 SRCFILES += ${RTOS}/heap_3.c ${RTOS}/list.c ${RTOS}/port.c ${RTOS}/queue.c ${RTOS}/tasks.c
-SRCFILES += ${BLUEPILL}/led.c ${BLUEPILL}/bluepill.c
+SRCFILES += ${BLUEPILL}/usart.c ${BLUEPILL}/bluepill.c
 
 # Object file(s) to build.
 TEMP1 = $(patsubst %.c,%.o,$(SRCFILES))

@@ -2,96 +2,116 @@
 
 #include <libopencm3/stm32/rcc.h>
 #include <libopencm3/stm32/gpio.h>
-#include <libopencm3/stm32/usart.h>
 
 struct usart_t
 {
-	uint32_t usart;  // USART number.
-};
-
-usart_handle_t usart_init(uint32_t usart, uint32_t baudrate, uint32_t databits, uint32_t parity, uint32_t stopbits, bool flowcontrol)
-{
-	// Declare local variable(s).
 	uint32_t gpio_port;
 	enum rcc_periph_clken gpio_clock;
-	enum rcc_periph_clken usart_clock;
-	uint16_t usart_tx;
-	uint16_t usart_rx;
-	uint16_t usart_cts;
-	uint16_t usart_rts;
-	uint32_t usart_stopbits;
+	enum rcc_periph_clken periph_clock;
+	uint32_t parity;
+	uint32_t stopbits;
+	uint16_t tx_pin;
+	uint16_t rx_pin;
+	uint16_t cts_pin;
+	uint16_t rts_pin;
+};
+
+int32_t usart_init(uint32_t usart, uint32_t baudrate, uint32_t databits, uint32_t parity, uint32_t stopbits, bool flowcontrol)
+{
+	// To do:
+	// Add check for already being initiated.
+
+	// Declare local variable(s).
+	struct usart_t port;
+
 	switch(usart)
 	{
 		case 1:
-			gpio_port   = GPIOA;
-			gpio_clock  = RCC_GPIOA;
-			usart_clock = RCC_USART1;
-			usart_tx    = GPIO_USART1_TX;
-			usart_rx    = GPIO_USART1_RX;
-			usart_cts   = GPIO_USART1_TX;
-			usart_rts   = GPIO_USART1_TX;
+			port.gpio_port    = GPIOA;
+			port.gpio_clock   = RCC_GPIOA;
+			port.periph_clock = RCC_USART1;
+			port.tx_pin       = GPIO_USART1_TX;
+			port.rx_pin       = GPIO_USART1_RX;
+			port.cts_pin      = GPIO_USART1_CTS;
+			port.rts_pin      = GPIO_USART1_RTS;
 			break;
 		case 2:
-			gpio_port   = GPIOA;
-			gpio_clock  = RCC_GPIOA;
-			usart_clock = RCC_USART2;
-			usart_tx    = GPIO_USART2_TX;
-			usart_rx    = GPIO_USART2_RX;
-			usart_cts   = GPIO_USART2_TX;
-			usart_rts   = GPIO_USART2_TX;
+			port.gpio_port    = GPIOA;
+			port.gpio_clock   = RCC_GPIOA;
+			port.periph_clock = RCC_USART2;
+			port.tx_pin       = GPIO_USART2_TX;
+			port.rx_pin       = GPIO_USART2_RX;
+			port.cts_pin      = GPIO_USART2_CTS;
+			port.rts_pin      = GPIO_USART2_RTS;
 			break;
 		case 3:
-			gpio_port   = GPIOB;
-			gpio_clock  = RCC_GPIOB;
-			usart_clock = RCC_USART3;
-			usart_tx    = GPIO_USART3_TX;
-			usart_rx    = GPIO_USART3_RX;
-			usart_cts   = GPIO_USART3_TX;
-			usart_rts   = GPIO_USART3_TX;
+			port.gpio_port    = GPIOB;
+			port.gpio_clock   = RCC_GPIOB;
+			port.periph_clock = RCC_USART3;
+			port.tx_pin       = GPIO_USART3_TX;
+			port.rx_pin       = GPIO_USART3_RX;
+			port.cts_pin      = GPIO_USART3_CTS;
+			port.rts_pin      = GPIO_USART3_RTS;
 			break;
 		default:
 			// Invalid USART number.
-			return NULL;
+			return 0;
 			break;
 	}
 
-	// Test for correct number of databits.
+	// Test for correct number of data bits.
 	if((databits != 8) && (databits != 9))
 	{
-		return NULL:
+		return 0;
 	}
 
 	// Test for correct parity.
-	// To do.
+	if(USART_PARITY_NONE == parity)
+	{
+		port.parity = USART_PARITY_NONE;
+	}
+	else if(PARITY_EVEN == parity)
+	{
+		port.parity = USART_PARITY_EVEN;
+	}
+	else if(PARITY_ODD == parity)
+	{
+		port.parity = USART_PARITY_ODD;
+	}
+	else
+	{
+		return 0;
+	}
 
 	// Test for stop bits.
 	if(1 == stopbits)
 	{
-		usart_stopbits = USART_STOPBITS_1;
+		port.stopbits = USART_STOPBITS_1;
 	}
 	else if(2 == stopbits)
 	{
-		usart_stopbits = USART_STOPBITS_2;
+		port.stopbits = USART_STOPBITS_2;
 	}
 	else
 	{
-		return NULL;
+		return 0;
 	}
 
 	// Configure USART.
-	rcc_periph_clock_enable(gpio_clock);
-	rcc_periph_clock_enable(usart_clock);
-	gpio_set_mode(gpio_port, GPIO_MODE_OUTPUT_50_MHZ, GPIO_CNF_OUTPUT_ALTFN_PUSHPULL, usart_tx);
-	gpio_set_mode(gpio_port, GPIO_MODE_OUTPUT_50_MHZ, GPIO_MODE_INPUT_PULL_UPDOWN, usart_rx);
+	rcc_periph_clock_enable(port.gpio_clock);
+	rcc_periph_clock_enable(port.periph_clock);
+	gpio_set_mode(port.gpio_port, GPIO_MODE_OUTPUT_50_MHZ, GPIO_CNF_OUTPUT_ALTFN_PUSHPULL, port.tx_pin);
+	gpio_set_mode(port.gpio_port, GPIO_MODE_OUTPUT_50_MHZ, GPIO_CNF_INPUT_FLOAT, port.rx_pin);
 	usart_set_baudrate(usart, baudrate);
 	usart_set_databits(usart, databits);
-	usart_set_stopbits(usart, stopbits);
+	usart_set_parity(usart, port.parity);
+	usart_set_stopbits(usart, port.stopbits);
 	usart_set_mode(usart, USART_MODE_TX_RX);
-	usart_set_stopbits(usart, usart_stopbits);
+
 	if(flowcontrol)
 	{
-		gpio_set_mode(gpio_port, GPIO_MODE_OUTPUT_50_MHZ, GPIO_CNF_OUTPUT_ALTFN_PUSHPULL, usart_cts);
-		gpio_set_mode(gpio_port, GPIO_MODE_OUTPUT_50_MHZ, GPIO_MODE_INPUT_PULL_UPDOWN, usart_rts);
+		gpio_set_mode(port.gpio_port, GPIO_MODE_OUTPUT_50_MHZ, GPIO_CNF_OUTPUT_ALTFN_PUSHPULL, port.cts_pin);
+		gpio_set_mode(port.gpio_port, GPIO_MODE_OUTPUT_50_MHZ, GPIO_CNF_INPUT_FLOAT, port.rts_pin);
 		usart_set_flow_control(usart, USART_FLOWCONTROL_RTS_CTS);
 	}
 	else
@@ -102,5 +122,5 @@ usart_handle_t usart_init(uint32_t usart, uint32_t baudrate, uint32_t databits, 
 
 	// Enable USART.
 	usart_enable(usart);
-	return NULL;
+	return 0;
 }
