@@ -7,7 +7,7 @@ include arm-none-eabi.mk
 STFLASH = $(shell which st-flash)
 
 # Output file name.
-BINARY = blinky
+BINARY = uart
 
 # Include path(s).
 LIBOPENCM3 := ../libopencm3
