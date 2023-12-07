@@ -5,6 +5,7 @@
 
 struct usart_t
 {
+	uint32_t usart_port;
 	uint32_t gpio_port;
 	enum rcc_periph_clken gpio_clock;
 	enum rcc_periph_clken periph_clock;
@@ -27,6 +28,7 @@ int32_t usart_init(uint32_t usart, uint32_t baudrate, uint32_t databits, uint32_
 	switch(usart)
 	{
 		case 1:
+			port.usart_port   = USART1;
 			port.gpio_port    = GPIOA;
 			port.gpio_clock   = RCC_GPIOA;
 			port.periph_clock = RCC_USART1;
@@ -36,6 +38,7 @@ int32_t usart_init(uint32_t usart, uint32_t baudrate, uint32_t databits, uint32_
 			port.rts_pin      = GPIO_USART1_RTS;
 			break;
 		case 2:
+			port.usart_port   = USART2;
 			port.gpio_port    = GPIOA;
 			port.gpio_clock   = RCC_GPIOA;
 			port.periph_clock = RCC_USART2;
@@ -45,6 +48,7 @@ int32_t usart_init(uint32_t usart, uint32_t baudrate, uint32_t databits, uint32_
 			port.rts_pin      = GPIO_USART2_RTS;
 			break;
 		case 3:
+			port.usart_port   = USART3;
 			port.gpio_port    = GPIOB;
 			port.gpio_clock   = RCC_GPIOB;
 			port.periph_clock = RCC_USART3;
@@ -70,11 +74,11 @@ int32_t usart_init(uint32_t usart, uint32_t baudrate, uint32_t databits, uint32_
 	{
 		port.parity = USART_PARITY_NONE;
 	}
-	else if(PARITY_EVEN == parity)
+	else if(USART_PARITY_EVEN == parity)
 	{
 		port.parity = USART_PARITY_EVEN;
 	}
-	else if(PARITY_ODD == parity)
+	else if(USART_PARITY_ODD == parity)
 	{
 		port.parity = USART_PARITY_ODD;
 	}
@@ -84,11 +88,11 @@ int32_t usart_init(uint32_t usart, uint32_t baudrate, uint32_t databits, uint32_
 	}
 
 	// Test for stop bits.
-	if(1 == stopbits)
+	if(USART_STOPBITS_1 == stopbits)
 	{
 		port.stopbits = USART_STOPBITS_1;
 	}
-	else if(2 == stopbits)
+	else if(USART_STOPBITS_2 == stopbits)
 	{
 		port.stopbits = USART_STOPBITS_2;
 	}
@@ -102,11 +106,11 @@ int32_t usart_init(uint32_t usart, uint32_t baudrate, uint32_t databits, uint32_
 	rcc_periph_clock_enable(port.periph_clock);
 	gpio_set_mode(port.gpio_port, GPIO_MODE_OUTPUT_50_MHZ, GPIO_CNF_OUTPUT_ALTFN_PUSHPULL, port.tx_pin);
 	gpio_set_mode(port.gpio_port, GPIO_MODE_OUTPUT_50_MHZ, GPIO_CNF_INPUT_FLOAT, port.rx_pin);
-	usart_set_baudrate(usart, baudrate);
-	usart_set_databits(usart, databits);
-	usart_set_parity(usart, port.parity);
-	usart_set_stopbits(usart, port.stopbits);
-	usart_set_mode(usart, USART_MODE_TX_RX);
+	usart_set_baudrate(port.usart_port, baudrate);
+	usart_set_databits(port.usart_port, databits);
+	usart_set_parity(port.usart_port, port.parity);
+	usart_set_stopbits(port.usart_port, port.stopbits);
+	usart_set_mode(port.usart_port, USART_MODE_TX_RX);
 
 	if(flowcontrol)
 	{
@@ -116,11 +120,12 @@ int32_t usart_init(uint32_t usart, uint32_t baudrate, uint32_t databits, uint32_
 	}
 	else
 	{
-		usart_set_flow_control(usart, USART_FLOWCONTROL_NONE);
+		usart_set_flow_control(port.usart_port, USART_FLOWCONTROL_NONE);
 
 	}
 
+	// To do: Does this go here?
 	// Enable USART.
-	usart_enable(usart);
-	return 0;
+	usart_enable(port.usart_port);
+	return port.usart_port;
 }
