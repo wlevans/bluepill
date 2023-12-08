@@ -49,7 +49,7 @@ ASFLAGS  = -mthumb
 ASFLAGS += -mcpu=cortex-m3
 
 # Common flags.
-OPT    := -Os
+OPT    := -O0
 DEBUG  := -g
 CSTD   ?= -std=c99
 CXXSTD ?= -std=c++11

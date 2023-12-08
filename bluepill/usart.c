@@ -105,7 +105,7 @@ int32_t usart_init(uint32_t usart, uint32_t baudrate, uint32_t databits, uint32_
 	rcc_periph_clock_enable(port.gpio_clock);
 	rcc_periph_clock_enable(port.periph_clock);
 	gpio_set_mode(port.gpio_port, GPIO_MODE_OUTPUT_50_MHZ, GPIO_CNF_OUTPUT_ALTFN_PUSHPULL, port.tx_pin);
-	gpio_set_mode(port.gpio_port, GPIO_MODE_OUTPUT_50_MHZ, GPIO_CNF_INPUT_FLOAT, port.rx_pin);
+	gpio_set_mode(port.gpio_port, GPIO_MODE_INPUT, GPIO_CNF_INPUT_FLOAT, port.rx_pin);
 	usart_set_baudrate(port.usart_port, baudrate);
 	usart_set_databits(port.usart_port, databits);
 	usart_set_parity(port.usart_port, port.parity);
@@ -115,7 +115,7 @@ int32_t usart_init(uint32_t usart, uint32_t baudrate, uint32_t databits, uint32_
 	if(flowcontrol)
 	{
 		gpio_set_mode(port.gpio_port, GPIO_MODE_OUTPUT_50_MHZ, GPIO_CNF_OUTPUT_ALTFN_PUSHPULL, port.cts_pin);
-		gpio_set_mode(port.gpio_port, GPIO_MODE_OUTPUT_50_MHZ, GPIO_CNF_INPUT_FLOAT, port.rts_pin);
+		gpio_set_mode(port.gpio_port, GPIO_MODE_INPUT, GPIO_CNF_INPUT_FLOAT, port.rts_pin);
 		usart_set_flow_control(usart, USART_FLOWCONTROL_RTS_CTS);
 	}
 	else
