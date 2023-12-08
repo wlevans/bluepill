@@ -19,9 +19,7 @@ static void usart_tx(void *args __attribute((unused)))
 
 static void usart_rx(void *args __attribute((unused)))
 {
-//	static uint8_t data = 0;
 	static bool result = false;
-
 	while(1)
 	{
 		result = usart_get_flag(usart, USART_SR_RXNE);
@@ -37,23 +35,18 @@ static void usart_rx(void *args __attribute((unused)))
 
 int main(void)
 {
-	// Set up board.
+	// Initialize board.
 	board_init();
-	// Set up LED.
+	// Initialzie LED.
 	led_init();
-
 	// Set up USART 1
 	usart = usart_init(1, 38400, 8, USART_PARITY_NONE, USART_STOPBITS_1, false);
-
 	// Create FreeRTOS tasks.
 	xTaskCreate(usart_tx, "usart_tx", 100, NULL, configMAX_PRIORITIES - 1, NULL);
 	xTaskCreate(usart_rx, "usart_rx", 100, NULL, configMAX_PRIORITIES - 1, NULL);
-
 	// Start FreeRTOS scheduler.
 	vTaskStartScheduler();
-
 	// Will only get here if the scheduler fails to start.
 	while(1);
-
 	return 0;
 }
