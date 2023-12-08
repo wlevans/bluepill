@@ -11,13 +11,19 @@ BINARY = uart
 
 # Include path(s).
 LIBOPENCM3 := ../libopencm3
-RTOS := ../rtos
-BLUEPILL := ../bluepill
+RTOS       := ../rtos
+BLUEPILL   := ../bluepill
 
 # Source files.
 SRCFILES  = main.c
-SRCFILES += ${RTOS}/heap_3.c ${RTOS}/list.c ${RTOS}/port.c ${RTOS}/queue.c ${RTOS}/tasks.c
-SRCFILES += ${BLUEPILL}/usart.c ${BLUEPILL}/bluepill.c
+SRCFILES += ${RTOS}/heap_3.c
+SRCFILES += ${RTOS}/list.c
+SRCFILES += ${RTOS}/port.c
+SRCFILES += ${RTOS}/queue.c
+SRCFILES += ${RTOS}/tasks.c
+SRCFILES += ${BLUEPILL}/usart.c
+SRCFILES += ${BLUEPILL}/bluepill.c
+SRCFILES += ${BLUEPILL}/led.c
 
 # Object file(s) to build.
 TEMP1 = $(patsubst %.c,%.o,$(SRCFILES))
