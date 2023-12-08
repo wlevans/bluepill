@@ -25,7 +25,7 @@ static void blink(void *args __attribute((unused)))
 
 int main(void)
 {
-	// Set up board.
+	// INitialize board.
 	board_init();
 
 	// Initialize LED.

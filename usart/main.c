@@ -37,7 +37,7 @@ int main(void)
 {
 	// Initialize board.
 	board_init();
-	// Initialzie LED.
+	// Initialize LED.
 	led_init();
 	// Set up USART 1
 	usart = usart_init(1, 38400, 8, USART_PARITY_NONE, USART_STOPBITS_1, false);
