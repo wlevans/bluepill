@@ -19,7 +19,7 @@ static void usart_tx(void *args __attribute((unused)))
 
 static void usart_rx(void *args __attribute((unused)))
 {
-	static uint8_t data = 0;
+//	static uint8_t data = 0;
 	static bool result = false;
 
 	while(1)
@@ -27,7 +27,7 @@ static void usart_rx(void *args __attribute((unused)))
 		result = usart_get_flag(usart, USART_SR_RXNE);
 		if(result)
 		{
-			data = usart_recv(usart);
+			usart_recv(usart);
 			led_toggle();
 		}
 		vTaskDelay(pdMS_TO_TICKS(10));
