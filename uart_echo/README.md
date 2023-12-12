@@ -1,8 +1,8 @@
 # uart_echo
 
-This is a simple program that echos back all data that is sent to in on USART1.
+This is a simple program that echos back all data that is received on USART1.
 
-## USART 1 Configuration:
+## USART 1 Configuration
 
 |Parameter    | Value |
 |:------------|------:|
