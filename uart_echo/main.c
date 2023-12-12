@@ -4,7 +4,6 @@
 
 #include "bluepill.h"
 #include "usart.h"
-#include "led.h"
 
 uint32_t uart = 0;
 static QueueHandle_t uart_q;
@@ -22,7 +21,6 @@ static void uart_tx(void *args __attribute((unused)))
 				taskYIELD();
 			}
 			usart_send(uart, data);
-			led_toggle();
 		}
 	}
 	return;
@@ -48,12 +46,10 @@ int main(void)
 {
 	// Initialize board.
 	board_init();
-	// Initialize LED.
-	led_init();
 	// Set up UART 1
 	uart = usart_init(1, 38400, 8, USART_PARITY_NONE, USART_STOPBITS_1, false);
 	// Set up UART queue.
-	uart_q = xQueueCreate(16,sizeof(uint8_t));
+	uart_q = xQueueCreate(1, sizeof(uint8_t));
 	// Create FreeRTOS tasks.
 	xTaskCreate(uart_tx, "uart_tx", 100, NULL, configMAX_PRIORITIES - 1, NULL);
 	xTaskCreate(uart_rx, "uart_rx", 100, NULL, configMAX_PRIORITIES - 1, NULL);

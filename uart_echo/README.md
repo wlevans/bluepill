@@ -1,10 +1,11 @@
-USART To Do List:
-- ~~Return usart_handle_t~~
-- ~~Create usart_rx and usart_tx tasks.~~
-- Use USART as loopback RX -> TX
-    - ~~Use queue to send data from usart_rx to usart_tx~~
-    - ~~~Blocking RX/TX calls at first.~~
-    - ~~Therefore echo back on terminal display.~~
-- Maybe change color?
-    - '\x1B' is escape sequence, therefore one char.
-- Update FreeRTOSConfig.h
+# uart_echo
+
+This is a simple program that echos back all data that is sent to in on USART1.
+
+## USART 1 Configuration:
+
+* Baudrate: 38400
+* Data bits: 8
+* Stop bits: 1
+* Parity: None
+* Flow Control: None
