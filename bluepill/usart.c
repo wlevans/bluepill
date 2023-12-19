@@ -124,8 +124,5 @@ int32_t usart_init(uint32_t usart, uint32_t baudrate, uint32_t databits, uint32_
 
 	}
 
-	// To do: Does this go here?
-	// Enable USART.
-	usart_enable(port.usart_port);
 	return port.usart_port;
 }

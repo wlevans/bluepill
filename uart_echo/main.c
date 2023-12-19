@@ -48,6 +48,8 @@ int main(void)
 	board_init();
 	// Set up UART 1
 	uart = usart_init(1, 38400, 8, USART_PARITY_NONE, USART_STOPBITS_1, false);
+	// Enable USART.
+	usart_enable(uart);
 	// Set up UART queue.
 	uart_q = xQueueCreate(1, sizeof(uint8_t));
 	// Create FreeRTOS tasks.
