@@ -9,26 +9,10 @@
 uint32_t uart = 0;
 static QueueHandle_t uart_txq;
 static QueueHandle_t uart_rxq;
-static char *menu[] = {"\x1B[2J\x1B[H1. LED On\n\r","2. LED Off\n\r","3. LED Toggle\n\n\r","LED state: "};
-
-static void blink(void *args __attribute((unused)))
-{
-	while(1)
-	{
-		led_toggle();
-		if(led_get())
-		{
-			// If LED is on.
-			vTaskDelay(pdMS_TO_TICKS(250));
-		}
-		else
-		{
-			// If LED is off.
-			vTaskDelay(pdMS_TO_TICKS(750));
-		}
-	}
-	return;
-}
+static char *menu[] = {"\x1B[2J\x1B[H1. LED On\n\r",
+		"2. LED Off\n\r",
+		"3. LED Toggle\n\n\r",
+		"LED state: "}; //("\033[5;11H")
 
 static void uart_tx(void *args __attribute((unused)))
 {
@@ -37,8 +21,7 @@ static void uart_tx(void *args __attribute((unused)))
 	// Transmit menu.
 	for(uint8_t i = 0; i < sizeof(menu) / sizeof(menu[0]); ++i)
 	{
-		char * s = menu[i];
-		for( ; *s; ++s)
+		for(char * s = menu[i]; *s; ++s)
 		{
 			while(!usart_get_flag(uart, USART_SR_TXE))
 			{
@@ -47,6 +30,12 @@ static void uart_tx(void *args __attribute((unused)))
 			usart_send(uart, *s);
 		}
 	}
+	// Send LED state. 1 for on; 0 for off.
+	while(!usart_get_flag(uart, USART_SR_TXE))
+	{
+		taskYIELD();
+	}
+	usart_send(uart, led_get()?'1':'0');
 
 	while(1)
 	{
@@ -70,10 +59,14 @@ int main(void)
 	board_init();
 	// Initialize LED.
 	led_init();
+//	led_toggle();
+
 	// Set up USART.
 	uart = usart_init(1, 38400, 8, USART_PARITY_NONE, USART_STOPBITS_1, false);
+
 	// Set up USART interrupts.
 	/*  To do: Configure USART interrupts. */
+
 	// Enable USART.
 	usart_enable(uart);
 	// Set up UART queue.
@@ -82,8 +75,6 @@ int main(void)
 	// Create FreeRTOS tasks.
 	xTaskCreate(uart_tx, "uart_tx", 100, NULL, configMAX_PRIORITIES - 1, NULL);
 	xTaskCreate(uart_rx, "uart_rx", 100, NULL, configMAX_PRIORITIES - 1, NULL);
-	// Create FreeRTOS task.
-	xTaskCreate(blink, "blink", 100, NULL, configMAX_PRIORITIES - 1, NULL);
 	// Start FreeRTOS scheduler.
 	vTaskStartScheduler();
 	// Will only get here if the scheduler fails to start.
