@@ -35,7 +35,7 @@ static void uart_rx(void *args __attribute((unused)))
 		if(usart_get_flag(uart, USART_SR_RXNE))
 		{
 			data = usart_recv(uart);
-			xQueueSend(uart_q, &data, portMAX_DELAY);
+			while(xQueueSend(uart_q, &data, 0) != pdPASS);
 		}
 		taskYIELD();
 	}
