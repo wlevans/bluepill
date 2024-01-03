@@ -17,6 +17,9 @@ struct usart_t
 	uint16_t rts_pin;
 };
 
+QueueHandle_t uart_txq;
+QueueHandle_t uart_rxq;
+
 int32_t usart_init(uint32_t usart, uint32_t baudrate, uint32_t databits, uint32_t parity, uint32_t stopbits, bool flowcontrol)
 {
 	// To do:
@@ -123,6 +126,87 @@ int32_t usart_init(uint32_t usart, uint32_t baudrate, uint32_t databits, uint32_
 		usart_set_flow_control(port.usart_port, USART_FLOWCONTROL_NONE);
 
 	}
+	// Set up UART queues.
+	uart_txq = xQueueCreate(64, sizeof(uint8_t));
+	uart_rxq = xQueueCreate( 1, sizeof(uint8_t));
 
 	return port.usart_port;
+}
+
+uint32_t usart_puts(uint32_t usart, char * src)
+{
+	// To do: Find a better way to determine if interrupte is/needs enabled.
+
+	uint32_t count = 0;
+	char * ptr = src;
+
+	if(usart_get_flag(usart, USART_SR_TXE))
+	{
+		usart_enable_tx_interrupt(usart);
+	}
+
+	for( ; *ptr; ++ptr)
+	{
+		if(xQueueSend(uart_txq, ptr, 0) == pdPASS)
+		{
+			++count;
+		}
+		else
+		{
+			break;
+		}
+	}
+
+	return count;
+}
+
+uint32_t usart_putc(uint32_t usart, char src)
+{
+	// To do: Find a better way to determine if interrupte is/needs enabled.
+
+	uint32_t count = 0;
+//	usart_enable_tx_interrupt(usart);
+
+	if(usart_get_flag(usart, USART_SR_TXE))
+	{
+		usart_send(usart, src);
+		++count;
+	}
+	else
+	{
+		if(xQueueSend(uart_txq, &src, 0) == pdPASS)
+		{
+			++count;
+		}
+	}
+	return count;
+}
+
+void usart1_isr(void)
+{
+	uint8_t data = 0;
+	BaseType_t xHigherPriorityTaskWoken = pdFALSE;
+
+	// Test for RX interrupt.
+	if(usart_get_flag(USART1, USART_SR_RXNE))
+	{
+		data = usart_recv(USART1);
+		xQueueSendFromISR(uart_rxq, &data, &xHigherPriorityTaskWoken);
+	}
+
+	// Test for TX interrupt.
+	if(usart_get_flag(USART1, USART_SR_TXE))
+	{
+		if(xQueueReceiveFromISR(uart_txq, &data, &xHigherPriorityTaskWoken))
+		{
+			usart_send(USART1, data);
+		}
+		else
+		{
+			usart_disable_tx_interrupt(USART1);
+		}
+	}
+
+	portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
+	return;
 }

@@ -1,7 +1,6 @@
 #ifndef BLUEPILL_LED
 #define BLUEPILL_LED
 
-#include <stdint.h>
 #include <stdbool.h>
 
 void led_init(void);
