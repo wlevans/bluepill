@@ -19,7 +19,8 @@ typedef struct usart_t usart_t;
 
 int32_t usart_init(uint32_t usart, uint32_t baudrate, uint32_t databits, uint32_t parity, uint32_t stopbits, bool flowcontrol);
 uint32_t usart_puts(uint32_t usart, char * src);
-uint32_t usart_putc(uint32_t usart, char src);
+uint32_t usart_putc(uint32_t usart, char c);
+uint32_t usart_getc(uint32_t usart, char * c);
 //void usart1_isr(void);
 
 #endif /* BLUEPILL_USART */

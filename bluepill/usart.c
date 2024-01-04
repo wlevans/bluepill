@@ -135,14 +135,15 @@ int32_t usart_init(uint32_t usart, uint32_t baudrate, uint32_t databits, uint32_
 
 uint32_t usart_puts(uint32_t usart, char * src)
 {
-	// To do: Find a better way to determine if interrupte is/needs enabled.
-
+	// To do: Look at making src const pointer to const string.
 	uint32_t count = 0;
 	char * ptr = src;
 
 	if(usart_get_flag(usart, USART_SR_TXE))
 	{
+		usart_send(usart, *ptr++);
 		usart_enable_tx_interrupt(usart);
+		++count;
 	}
 
 	for( ; *ptr; ++ptr)
@@ -160,26 +161,42 @@ uint32_t usart_puts(uint32_t usart, char * src)
 	return count;
 }
 
-uint32_t usart_putc(uint32_t usart, char src)
+uint32_t usart_putc(uint32_t usart, char c)
 {
-	// To do: Find a better way to determine if interrupte is/needs enabled.
+	uint32_t result = 0;
 
-	uint32_t count = 0;
-//	usart_enable_tx_interrupt(usart);
+	// To do: Use xQueuePeek to test if queue is empty. If empty, send to usart;
+	// otherwise push to tx queue.
+
 
 	if(usart_get_flag(usart, USART_SR_TXE))
 	{
-		usart_send(usart, src);
-		++count;
+		// If TX data buffer is empty, then the USART is not currently sending data
+		usart_send(usart, c);
+		result = 1;
+		// To do: Does interrupt needed enabled?
+		// usart_enable_tx_interrupt(usart);
 	}
 	else
 	{
-		if(xQueueSend(uart_txq, &src, 0) == pdPASS)
+		if(xQueueSend(uart_txq, &c, 0) == pdPASS)
 		{
-			++count;
+			result = 1;
 		}
 	}
-	return count;
+	return result;
+}
+
+uint32_t usart_getc(uint32_t usart, char * c)
+{
+	// To do: Add queue to usart handler and test here.
+	uint32_t result = 0;
+
+	if(xQueueReceive(uart_rxq, c, 0) == pdPASS)
+	{
+		result = 1;
+	}
+	return result;
 }
 
 void usart1_isr(void)
