@@ -142,13 +142,18 @@ uint32_t usart_puts(uint32_t usart, char * src)
 	if(usart_get_flag(usart, USART_SR_TXE))
 	{
 		usart_send(usart, *ptr++);
-		usart_enable_tx_interrupt(usart);
+		// To do: Why does it not work if interrupt is enabled here?
+		// To do: Does this need to be a criticle section?
+		// To do: Track down race condition. First byte not always sent. Due to
+		// race between usart_puts() and usart1_isr()?
+//		usart_enable_tx_interrupt(usart);
 		++count;
 	}
 
-	for( ; *ptr; ++ptr)
+//	for( ; *ptr; )
+	while(*ptr)
 	{
-		if(xQueueSend(uart_txq, ptr, 0) == pdPASS)
+		if(xQueueSend(uart_txq, ptr++, 0) == pdPASS)
 		{
 			++count;
 		}
@@ -157,7 +162,7 @@ uint32_t usart_puts(uint32_t usart, char * src)
 			break;
 		}
 	}
-
+	usart_enable_tx_interrupt(usart);
 	return count;
 }
 
@@ -168,22 +173,26 @@ uint32_t usart_putc(uint32_t usart, char c)
 	// To do: Use xQueuePeek to test if queue is empty. If empty, send to usart;
 	// otherwise push to tx queue.
 
+	// To do: Same race condition as usart_puts().
 
 	if(usart_get_flag(usart, USART_SR_TXE))
 	{
-		// If TX data buffer is empty, then the USART is not currently sending data
+		// If TX data buffer is empty, then the USART is not currently sending data.
 		usart_send(usart, c);
-		result = 1;
 		// To do: Does interrupt needed enabled?
-		// usart_enable_tx_interrupt(usart);
+		// Yes, just in case a usart_puts is called immediately afterwards.
+//		usart_enable_tx_interrupt(usart);
+		result = 1;
 	}
 	else
 	{
 		if(xQueueSend(uart_txq, &c, 0) == pdPASS)
 		{
 			result = 1;
+			usart_enable_tx_interrupt(usart);
 		}
 	}
+
 	return result;
 }
 
@@ -204,13 +213,6 @@ void usart1_isr(void)
 	uint8_t data = 0;
 	BaseType_t xHigherPriorityTaskWoken = pdFALSE;
 
-	// Test for RX interrupt.
-	if(usart_get_flag(USART1, USART_SR_RXNE))
-	{
-		data = usart_recv(USART1);
-		xQueueSendFromISR(uart_rxq, &data, &xHigherPriorityTaskWoken);
-	}
-
 	// Test for TX interrupt.
 	if(usart_get_flag(USART1, USART_SR_TXE))
 	{
@@ -222,6 +224,13 @@ void usart1_isr(void)
 		{
 			usart_disable_tx_interrupt(USART1);
 		}
+	}
+
+	// Test for RX interrupt.
+	if(usart_get_flag(USART1, USART_SR_RXNE))
+	{
+		data = usart_recv(USART1);
+		xQueueSendFromISR(uart_rxq, &data, &xHigherPriorityTaskWoken);
 	}
 
 	portYIELD_FROM_ISR(xHigherPriorityTaskWoken);

@@ -9,7 +9,7 @@
 
 uint32_t uart = 0;
 
-static char *menu[] = {"\x1B[2J\x1B[H",
+static char *menu[] = {"\x1B[2J\x1B[0;0H",
 		"1. LED On\n\r",
 		"2. LED Off\n\r",
 		"3. LED Toggle\n\n\r",
@@ -18,7 +18,6 @@ static char *menu[] = {"\x1B[2J\x1B[H",
 static void process_cmd(void *args __attribute((unused)))
 {
 	static char data = 0;
-
 	// To do: Should menu transmit be moved to main?
 	// Transmit menu.
 	for(uint8_t i = 0; i < sizeof(menu) / sizeof(menu[0]); ++i)
@@ -27,8 +26,8 @@ static void process_cmd(void *args __attribute((unused)))
 	}
 	// Send LED state. 1 for on; 0 for off.
 	usart_putc(uart, led_get()?'1':'0');
-	// Position curser.
-//	usart_puts(uart, "\x1B[6;0H");
+	// To do: Why is curser not moved here but is moved below?
+	usart_puts(uart, "\x1B[6;0H");
 
 	while(1)
 	{
@@ -50,9 +49,10 @@ static void process_cmd(void *args __attribute((unused)))
 					break;
 			}
 			// To do: Debug following usart_puts commands.
+			// Appears that first character is being dropped.
+			// Maybe try flow control?
 			// Update LED status.
 			usart_puts(uart, "\x1B[5;12H");
-//			usart_puts(uart, "\x1B[6;0H");
 			usart_putc(uart, led_get()?'1':'0');
 			usart_puts(uart, "\x1B[6;0H");
 		}
@@ -75,7 +75,7 @@ int main(void)
 	// To do: Move IRQ code to usart.*?
 	// Enable USART RX and TX interrupts.
 	usart_enable_rx_interrupt(uart);
-	usart_enable_tx_interrupt(uart);
+//	usart_enable_tx_interrupt(uart);
 	// Make sure the interrupt is routed through the NVIC
 	nvic_enable_irq(NVIC_USART1_IRQ);
 
