@@ -137,33 +137,20 @@ uint32_t usart_puts(uint32_t usart, char * src)
 {
 	// To do: Look at making src const pointer to const string.
 	uint32_t count = 0;
-	char * ptr = src;
+	char * ptr;
 
-	if(usart_get_flag(usart, USART_SR_TXE))
+	for(ptr = src; *ptr; ++ptr)
 	{
-		usart_send(usart, *ptr++);
-		// To do: Why does it not work if interrupt is enabled here?
-		// To do: Track down race condition. First byte not always sent. Due to
-		// race between usart_puts() and usart1_isr()?
-//		usart_enable_tx_interrupt(usart);
-		++count;
-	}
-
-	for( ; *ptr; )
-	{
-		if(xQueueSend(uart_txq, ptr++, pdMS_TO_TICKS(100)) == pdPASS)
+		if(xQueueSend(uart_txq, ptr, pdMS_TO_TICKS(100)) == pdPASS)
 		{
 			++count;
-			// To do: Why does it not work if interrupt is enabled here?
-//			usart_enable_tx_interrupt(usart);
+			usart_enable_tx_interrupt(usart);
 		}
 		else
 		{
 			break;
 		}
 	}
-	// To do: Why does it only work if interrupt is enabled here?
-	usart_enable_tx_interrupt(usart);
 
 //	for(ptr = src; *ptr; ++ptr) count += usart_putc(usart, *ptr);
 	return count;
@@ -171,33 +158,12 @@ uint32_t usart_puts(uint32_t usart, char * src)
 
 uint32_t usart_putc(uint32_t usart, char c)
 {
-	uint32_t result = 0;
-
-	// To do: Use xQueuePeek to test if queue is empty. If empty, send to usart;
-	// otherwise push to tx queue.
-
-	// To do: Same race condition as usart_puts().
-
-	if(usart_get_flag(usart, USART_SR_TXE))
+	if(xQueueSend(uart_txq, &c, pdMS_TO_TICKS(10)) == pdPASS)
 	{
-		// If TX data buffer is empty, then the USART is not currently sending data.
-		usart_send(usart, c);
-		// To do: Does interrupt needed enabled?
-		// Yes, just in case a usart_puts is called immediately afterwards.
-//		usart_enable_tx_interrupt(usart);
-		result = 1;
+		usart_enable_tx_interrupt(usart);
+		return 1;
 	}
-	else
-	{
-		if(xQueueSend(uart_txq, &c, pdMS_TO_TICKS(10)) == pdPASS)
-		{
-			++result;
-//			usart_enable_tx_interrupt(usart);
-		}
-	}
-	usart_enable_tx_interrupt(usart);
-
-	return result;
+	return 0;
 }
 
 uint32_t usart_getc(uint32_t usart, char * c)

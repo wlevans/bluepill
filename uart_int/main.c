@@ -67,16 +67,16 @@ int main(void)
 	board_init();
 	// Initialize LED.
 	led_init();
-//	led_toggle();
 
 	// Set up USART.
 	uart = usart_init(1, 38400, 8, USART_PARITY_NONE, USART_STOPBITS_1, false);
 
 	// To do: Move IRQ code to usart.*?
-	// Enable USART RX and TX interrupts.
+	// Enable USART RX interrupt.
 	usart_enable_rx_interrupt(uart);
-//	usart_enable_tx_interrupt(uart);
-	// Make sure the interrupt is routed through the NVIC
+	// Set USART 1 interrupt priority.
+	nvic_set_priority(NVIC_USART1_IRQ, 0xCF);
+	// Enable USART 1 interrupt.
 	nvic_enable_irq(NVIC_USART1_IRQ);
 
 	// Enable USART.
