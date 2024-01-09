@@ -26,7 +26,6 @@ static void process_cmd(void *args __attribute((unused)))
 	}
 	// Send LED state. 1 for on; 0 for off.
 	usart_putc(uart, led_get()?'1':'0');
-	// To do: Why is curser not moved here but is moved below?
 	usart_puts(uart, "\x1B[6;0H");
 
 	while(1)
@@ -48,9 +47,6 @@ static void process_cmd(void *args __attribute((unused)))
 				default:
 					break;
 			}
-			// To do: Debug following usart_puts commands.
-			// Appears that first character is being dropped.
-			// Maybe try flow control?
 			// Update LED status.
 			usart_puts(uart, "\x1B[5;12H");
 			usart_putc(uart, led_get()?'1':'0');
