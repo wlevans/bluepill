@@ -128,8 +128,8 @@ int32_t usart_init(uint32_t usart, uint32_t baudrate, uint32_t databits, uint32_
 
 	}
 	// Set up UART queues.
-	uart_txq = xQueueCreate(64, sizeof(uint8_t));
-	uart_rxq = xQueueCreate( 1, sizeof(uint8_t));
+	uart_txq = xQueueCreate(16, sizeof(uint8_t));
+	uart_rxq = xQueueCreate(1, sizeof(uint8_t));
 
 	return port.usart_port;
 }
@@ -138,11 +138,11 @@ uint32_t usart_puts(uint32_t usart, char * src)
 {
 	// To do: Look at making src const pointer to const string.
 	uint32_t count = 0;
-	char * ptr;
+	char * ptr = src;
 
-	for(ptr = src; *ptr; ++ptr)
+	for( ; *ptr; )
 	{
-		if(xQueueSend(uart_txq, ptr, pdMS_TO_TICKS(100)) == pdPASS)
+		if(xQueueSend(uart_txq, ptr++, pdMS_TO_TICKS(10)) == pdPASS)
 		{
 			++count;
 			usart_enable_tx_interrupt(usart);
