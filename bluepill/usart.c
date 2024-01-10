@@ -134,15 +134,16 @@ int32_t usart_init(uint32_t usart, uint32_t baudrate, uint32_t databits, uint32_
 	return port.usart_port;
 }
 
-uint32_t usart_puts(uint32_t usart, char * src)
+uint32_t usart_puts(uint32_t usart, const char * src)
 {
 	// To do: Look at making src const pointer to const string.
 	uint32_t count = 0;
-	char * ptr = src;
+//	char * ptr = src;
 
-	for( ; *ptr; )
+//	for( ; *ptr; )
+	while(*src)
 	{
-		if(xQueueSend(uart_txq, ptr++, pdMS_TO_TICKS(10)) == pdPASS)
+		if(xQueueSend(uart_txq, src++, pdMS_TO_TICKS(10)) == pdPASS)
 		{
 			++count;
 			usart_enable_tx_interrupt(usart);
