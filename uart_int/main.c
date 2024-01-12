@@ -23,7 +23,6 @@ int main(void)
 	// Set up USART.
 	uart = usart_init(1, 38400, 8, USART_PARITY_NONE, USART_STOPBITS_1, false);
 
-	// To do: Move IRQ code to usart.*?
 	// Enable USART RX interrupt.
 	usart_enable_rx_interrupt(uart);
 	// Set USART 1 interrupt priority.

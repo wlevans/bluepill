@@ -136,11 +136,8 @@ int32_t usart_init(uint32_t usart, uint32_t baudrate, uint32_t databits, uint32_
 
 uint32_t usart_puts(uint32_t usart, const char * src)
 {
-	// To do: Look at making src const pointer to const string.
 	uint32_t count = 0;
-//	char * ptr = src;
 
-//	for( ; *ptr; )
 	while(*src)
 	{
 		if(xQueueSend(uart_txq, src++, pdMS_TO_TICKS(10)) == pdPASS)
@@ -154,7 +151,6 @@ uint32_t usart_puts(uint32_t usart, const char * src)
 		}
 	}
 
-//	for(ptr = src; *ptr; ++ptr) count += usart_putc(usart, *ptr);
 	return count;
 }
 
@@ -170,14 +166,11 @@ uint32_t usart_putc(uint32_t usart, char c)
 
 uint32_t usart_getc(uint32_t usart, char * c)
 {
-	// To do: Add queue to usart handler and test here.
-	uint32_t result = 0;
-
 	if(xQueueReceive(uart_rxq, c, 0) == pdPASS)
 	{
-		result = 1;
+		return 1;
 	}
-	return result;
+	return 0;
 }
 
 void usart1_isr(void)
