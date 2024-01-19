@@ -7,23 +7,22 @@ include arm-none-eabi.mk
 STFLASH = $(shell which st-flash)
 
 # Output file name.
-BINARY = uart_int
+BINARY = uart_echo
 
 # Include path(s).
 LIBOPENCM3 := ../libopencm3
 RTOS       := ../rtos
-BLUEPILL   := ../bluepill
+SRC        := src
 
 # Source files.
-SRCFILES  = main.c
+SRCFILES  = ${SRC}/main.c
+SRCFILES += ${SRC}/usart.c
+SRCFILES += ${SRC}/led.c
 SRCFILES += ${RTOS}/heap_3.c
 SRCFILES += ${RTOS}/list.c
 SRCFILES += ${RTOS}/port.c
 SRCFILES += ${RTOS}/queue.c
 SRCFILES += ${RTOS}/tasks.c
-SRCFILES += ${BLUEPILL}/usart.c
-SRCFILES += ${BLUEPILL}/bluepill.c
-SRCFILES += ${BLUEPILL}/led.c
 
 # Object file(s) to build.
 TEMP1 = $(patsubst %.c,%.o,$(SRCFILES))
@@ -81,7 +80,8 @@ TGT_CPPFLAGS += -Wredundant-decls
 TGT_CPPFLAGS += -I.
 TGT_CPPFLAGS += -I./$(LIBOPENCM3)/include
 TGT_CPPFLAGS += -I./${RTOS}
-TGT_CPPFLAGS += -I./${BLUEPILL}
+TGT_CPPFLAGS += -I./${SRC}
+TGT_CPPFLAGS += -I./include
 
 # Linker flags.
 TGT_LDFLAGS += --static
