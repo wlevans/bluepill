@@ -2,7 +2,7 @@
 #include "task.h"
 #include "queue.h"
 
-#include "bluepill.h"
+#include <libopencm3/stm32/rcc.h>
 #include "usart.h"
 
 uint32_t uart = 0;
@@ -44,12 +44,12 @@ static void uart_rx(void *args __attribute((unused)))
 
 int main(void)
 {
-	// Initialize board.
-	board_init();
+	// Set up clock.
+	rcc_clock_setup_pll(&rcc_hse_configs[RCC_CLOCK_HSE8_72MHZ]);
 	// Set up UART 1
-	uart = usart_init(1, 38400, 8, USART_PARITY_NONE, USART_STOPBITS_1, false);
+	usart1_init();
 	// Enable USART.
-	usart_enable(uart);
+	usart_enable(USART1);
 	// Set up UART queue.
 	uart_q = xQueueCreate(1, sizeof(uint8_t));
 	// Create FreeRTOS tasks.
