@@ -17,7 +17,6 @@ SRC := src
 # Source files.
 SRCFILES  = ${SRC}/main.c
 SRCFILES += ${SRC}/led.c
-SRCFILES += ${SRC}/bluepill.c
 SRCFILES += ${RTOS}/heap_3.c
 SRCFILES += ${RTOS}/list.c
 SRCFILES += ${RTOS}/port.c
