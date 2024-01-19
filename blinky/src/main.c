@@ -1,7 +1,7 @@
 #include "FreeRTOS.h"
 #include "task.h"
 
-#include "bluepill.h"
+#include <libopencm3/stm32/rcc.h>
 #include "led.h"
 
 static void blink(void *args __attribute((unused)))
@@ -25,8 +25,8 @@ static void blink(void *args __attribute((unused)))
 
 int main(void)
 {
-	// INitialize board.
-	board_init();
+	// Set up clock.
+	rcc_clock_setup_pll(&rcc_hse_configs[RCC_CLOCK_HSE8_72MHZ]);
 
 	// Initialize LED.
 	led_init();

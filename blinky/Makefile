@@ -12,12 +12,11 @@ BINARY = blinky
 # Include path(s).
 LIBOPENCM3 := ../libopencm3
 RTOS := ../rtos
-BLUEPILL := ../bluepill
+SRC := src
 
 # Source files.
-SRCFILES  = main.c
+SRCFILES  = ${SRC}/main.c ${SRC}/led.c ${SRC}/bluepill.c
 SRCFILES += ${RTOS}/heap_3.c ${RTOS}/list.c ${RTOS}/port.c ${RTOS}/queue.c ${RTOS}/tasks.c
-SRCFILES += ${BLUEPILL}/led.c ${BLUEPILL}/bluepill.c
 
 # Object file(s) to build.
 TEMP1 = $(patsubst %.c,%.o,$(SRCFILES))
@@ -75,7 +74,8 @@ TGT_CPPFLAGS += -Wredundant-decls
 TGT_CPPFLAGS += -I.
 TGT_CPPFLAGS += -I./$(LIBOPENCM3)/include
 TGT_CPPFLAGS += -I./${RTOS}
-TGT_CPPFLAGS += -I./${BLUEPILL}
+TGT_CPPFLAGS += -I./${SRC}
+TGT_CPPFLAGS += -I./include
 
 # Linker flags.
 TGT_LDFLAGS += --static
