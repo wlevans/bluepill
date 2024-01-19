@@ -5,7 +5,6 @@
 #include <libopencm3/stm32/rcc.h>
 #include "usart.h"
 
-uint32_t uart = 0;
 static QueueHandle_t uart_q;
 
 static void uart_tx(void *args __attribute((unused)))
@@ -16,11 +15,11 @@ static void uart_tx(void *args __attribute((unused)))
 	{
 		if(xQueueReceive(uart_q, &data, 500) == pdPASS)
 		{
-			while(!usart_get_flag(uart, USART_SR_TXE))
+			while(!usart_get_flag(USART1, USART_SR_TXE))
 			{
 				taskYIELD();
 			}
-			usart_send(uart, data);
+			usart_send(USART1, data);
 		}
 	}
 	return;
@@ -32,9 +31,9 @@ static void uart_rx(void *args __attribute((unused)))
 
 	while(1)
 	{
-		if(usart_get_flag(uart, USART_SR_RXNE))
+		if(usart_get_flag(USART1, USART_SR_RXNE))
 		{
-			data = usart_recv(uart);
+			data = usart_recv(USART1);
 			while(xQueueSend(uart_q, &data, 0) != pdPASS);
 		}
 		taskYIELD();
