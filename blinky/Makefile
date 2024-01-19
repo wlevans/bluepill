@@ -15,8 +15,14 @@ RTOS := ../rtos
 SRC := src
 
 # Source files.
-SRCFILES  = ${SRC}/main.c ${SRC}/led.c ${SRC}/bluepill.c
-SRCFILES += ${RTOS}/heap_3.c ${RTOS}/list.c ${RTOS}/port.c ${RTOS}/queue.c ${RTOS}/tasks.c
+SRCFILES  = ${SRC}/main.c
+SRCFILES += ${SRC}/led.c
+SRCFILES += ${SRC}/bluepill.c
+SRCFILES += ${RTOS}/heap_3.c
+SRCFILES += ${RTOS}/list.c
+SRCFILES += ${RTOS}/port.c
+SRCFILES += ${RTOS}/queue.c
+SRCFILES += ${RTOS}/tasks.c
 
 # Object file(s) to build.
 TEMP1 = $(patsubst %.c,%.o,$(SRCFILES))
