@@ -1,9 +1,9 @@
-#include "usart.h"
+#include "uart.h"
 
 #include <libopencm3/stm32/rcc.h>
 #include <libopencm3/stm32/gpio.h>
 
-void usart1_init(void)
+void uart1_init(void)
 {
 	// Configure USART 1.
 	rcc_periph_clock_enable(RCC_GPIOA);

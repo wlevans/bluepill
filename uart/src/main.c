@@ -3,7 +3,7 @@
 #include "queue.h"
 
 #include <libopencm3/stm32/rcc.h>
-#include "usart.h"
+#include "uart.h"
 
 static QueueHandle_t uart_q;
 
@@ -46,7 +46,7 @@ int main(void)
 	// Set up clock.
 	rcc_clock_setup_pll(&rcc_hse_configs[RCC_CLOCK_HSE8_72MHZ]);
 	// Set up UART 1
-	usart1_init();
+	uart1_init();
 	// Enable USART.
 	usart_enable(USART1);
 	// Set up UART queue.

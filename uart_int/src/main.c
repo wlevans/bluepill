@@ -6,7 +6,7 @@
 #include <libopencm3/stm32/rcc.h>
 #include <libopencm3/cm3/nvic.h>
 
-#include "usart.h"
+#include "uart_int.h"
 #include "led.h"
 
 void printMenu(void);
@@ -19,7 +19,7 @@ int main(void)
 	// Initialize LED.
 	led_init();
 	// Initialize USART 1.
-	usart1_init();
+	uart1_init();
 
 	// Enable USART RX interrupt.
 	usart_enable_rx_interrupt(USART1);
@@ -50,7 +50,7 @@ void printMenu(void)
 	// Transmit menu.
 	for(uint8_t i = 0; i < sizeof(menu) / sizeof(menu[0]); ++i)
 	{
-		usart_puts(USART1, menu[i]);
+		uart_puts(USART1, menu[i]);
 	}
 }
 
@@ -61,13 +61,13 @@ static void process_cmd(void *args __attribute((unused)))
 	// Print (transmit) menu.
 	printMenu();
 	// Send LED state. 1 for on; 0 for off.
-	usart_putc(USART1, led_get()?'1':'0');
-	usart_puts(USART1, "\x1B[6;0H");
+	uart_putc(USART1, led_get()?'1':'0');
+	uart_puts(USART1, "\x1B[6;0H");
 
 	while(1)
 	{
 		// Wait until a command is received.
-		if(usart_getc(&data) != 0)
+		if(uart_getc(&data) != 0)
 		{
 			switch(data)
 			{
@@ -84,9 +84,9 @@ static void process_cmd(void *args __attribute((unused)))
 					break;
 			}
 			// Update LED status.
-			usart_puts(USART1, "\x1B[5;12H");
-			usart_putc(USART1, led_get()?'1':'0');
-			usart_puts(USART1, "\x1B[6;0H");
+			uart_puts(USART1, "\x1B[5;12H");
+			uart_putc(USART1, led_get()?'1':'0');
+			uart_puts(USART1, "\x1B[6;0H");
 		}
 		taskYIELD();
 	}

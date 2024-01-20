@@ -7,7 +7,7 @@ include arm-none-eabi.mk
 STFLASH = $(shell which st-flash)
 
 # Output file name.
-BINARY = uart_echo
+BINARY = uart
 
 # Include path(s).
 LIBOPENCM3 := ../libopencm3
@@ -16,7 +16,7 @@ SRC        := src
 
 # Source files.
 SRCFILES  = ${SRC}/main.c
-SRCFILES += ${SRC}/usart.c
+SRCFILES += ${SRC}/uart.c
 SRCFILES += ${RTOS}/heap_3.c
 SRCFILES += ${RTOS}/list.c
 SRCFILES += ${RTOS}/port.c

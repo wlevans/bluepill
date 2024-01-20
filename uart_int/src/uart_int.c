@@ -1,4 +1,4 @@
-#include "usart.h"
+#include "uart_int.h"
 
 #include <libopencm3/stm32/rcc.h>
 #include <libopencm3/stm32/gpio.h>
@@ -7,7 +7,7 @@
 QueueHandle_t uart_txq;
 QueueHandle_t uart_rxq;
 
-void usart1_init(void)
+void uart1_init(void)
 {
 	// Configure USART 1.
 	rcc_periph_clock_enable(RCC_GPIOA);
@@ -26,7 +26,7 @@ void usart1_init(void)
 	return;
 }
 
-uint32_t usart_puts(uint32_t usart, const char * src)
+uint32_t uart_puts(uint32_t usart, const char * src)
 {
 	uint32_t count = 0;
 
@@ -46,7 +46,7 @@ uint32_t usart_puts(uint32_t usart, const char * src)
 	return count;
 }
 
-uint32_t usart_putc(uint32_t usart, char c)
+uint32_t uart_putc(uint32_t usart, char c)
 {
 	if(xQueueSend(uart_txq, &c, pdMS_TO_TICKS(10)) == pdPASS)
 	{
@@ -56,7 +56,7 @@ uint32_t usart_putc(uint32_t usart, char c)
 	return 0;
 }
 
-uint32_t usart_getc(char * c)
+uint32_t uart_getc(char * c)
 {
 	if(xQueueReceive(uart_rxq, c, 0) == pdPASS)
 	{

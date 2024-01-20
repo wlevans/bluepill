@@ -1,5 +1,5 @@
-#ifndef BLUEPILL_LED
-#define BLUEPILL_LED
+#ifndef __BLUEPILL_LED__
+#define __BLUEPILL_LED__
 
 #include <stdbool.h>
 
@@ -9,4 +9,4 @@ void led_off(void);
 void led_toggle(void);
 bool led_get(void);
 
-#endif /* BLUEPILL_LED */
+#endif /* __BLUEPILL_LED__ */

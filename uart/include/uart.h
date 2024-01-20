@@ -1,5 +1,5 @@
-#ifndef BLUEPILL_USART
-#define BLUEPILL_USART
+#ifndef __BLUEPILL_UART__
+#define __BLUEPILL_UART__
 
 #include "FreeRTOS.h"
 #include "queue.h"
@@ -8,6 +8,6 @@
 #include <stdbool.h>
 #include <libopencm3/stm32/usart.h>
 
-void usart1_init(void);
+void uart1_init(void);
 
-#endif /* BLUEPILL_USART */
+#endif /* __BLUEPILL_UART__ */

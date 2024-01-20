@@ -1,5 +1,5 @@
-#ifndef BLUEPILL_USART
-#define BLUEPILL_USART
+#ifndef __BLUEPILL_UART_INT__
+#define __BLUEPILL_UART_INT__
 
 #include "FreeRTOS.h"
 #include "queue.h"
@@ -13,9 +13,9 @@
 // Opaque USART structure (hides the structure from teh user).
 typedef struct usart_t usart_t;
 
-void usart1_init(void);
-uint32_t usart_puts(uint32_t usart, const char * src);
-uint32_t usart_putc(uint32_t usart, char c);
-uint32_t usart_getc(char * c);
+void uart1_init(void);
+uint32_t uart_puts(uint32_t usart, const char * src);
+uint32_t uart_putc(uint32_t usart, char c);
+uint32_t uart_getc(char * c);
 
-#endif /* BLUEPILL_USART */
+#endif /* __BLUEPILL_UART_INT__ */
