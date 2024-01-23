@@ -55,6 +55,7 @@ CXXSTD ?= -std=c++11
 # Target C flags.
 TGT_CFLAGS += $(OPT) $(DEBUG) $(CSTD)
 TGT_CFLAGS += $(ARCH_FLAGS)
+TGT_CFLAGS += -specs=nano.specs
 TFT_CFLAGS += -Wimpliciit-function-declaration
 TGT_CFLAGS += -Wredundant-decls
 TGT_CFLAGS += -Wmissing-prototypes
@@ -93,6 +94,7 @@ TGT_LDFLAGS += -Wl,--cref
 TGT_LDFLAGS += -Wl,--gc-sections
 
 # Used libraries.
+LDLIBS += -specs=nano.specs
 LDLIBS += -specs=nosys.specs
 LDLIBS += -Wl,--start-group -lc -lgcc -lnosys -Wl,--end-group
 LDLIBS += -L$(LIBOPENCM3)/lib
