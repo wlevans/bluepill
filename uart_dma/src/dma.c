@@ -1,5 +1,4 @@
-#include "uart_dma.h"
-
+#include <dma.h>
 #include <libopencm3/stm32/rcc.h>
 #include <libopencm3/stm32/gpio.h>
 #include <libopencm3/cm3/nvic.h>
@@ -49,31 +48,5 @@ void dma1_init(void)
 	dma_set_memory_size(DMA1, DMA_CHANNEL5, DMA_CCR_MSIZE_8BIT);
 	dma_enable_memory_increment_mode(DMA1, DMA_CHANNEL5);
 
-	return;
-}
-
-void uart1_init(void)
-{
-	// Enable clocks.
-	rcc_periph_clock_enable(RCC_GPIOA);
-	rcc_periph_clock_enable(RCC_USART1);
-	// Configure USART 1.
-	gpio_set_mode(GPIOA, GPIO_MODE_OUTPUT_50_MHZ, GPIO_CNF_OUTPUT_ALTFN_PUSHPULL, GPIO_USART1_TX);
-	gpio_set_mode(GPIOA, GPIO_MODE_INPUT, GPIO_CNF_INPUT_FLOAT, GPIO_USART1_RX);
-	usart_set_baudrate(USART1, 38400);
-	usart_set_databits(USART1, 8);
-	usart_set_parity(USART1, USART_PARITY_NONE);
-	usart_set_stopbits(USART1, USART_STOPBITS_1);
-	usart_set_mode(USART1, USART_MODE_TX_RX);
-	usart_set_flow_control(USART1, USART_FLOWCONTROL_NONE);
-
-	return;
-}
-
-void usart1_isr(void)
-{
-	BaseType_t xHigherPriorityTaskWoken = pdFALSE;
-
-	portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
 	return;
 }

@@ -6,8 +6,9 @@
 #include <libopencm3/stm32/rcc.h>
 #include <libopencm3/cm3/nvic.h>
 
-#include "uart_dma.h"
 #include "led.h"
+#include "uart.h"
+#include "dma.h"
 
 int main(void)
 {
@@ -20,15 +21,6 @@ int main(void)
 	// Initialize DMA 1.
 	dma1_init();
 
-	// Enable USART RX interrupt.
-	usart_enable_rx_interrupt(USART1);
-	// Set USART 1 interrupt priority.
-	nvic_set_priority(NVIC_USART1_IRQ, 0xCF);
-	// Enable USART 1 interrupt.
-	nvic_enable_irq(NVIC_USART1_IRQ);
-
-	// Enable USART.
-	usart_enable(USART1);
 
 	// Create FreeRTOS tasks.
 	// To do: create tasks.

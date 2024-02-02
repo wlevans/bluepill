@@ -1,5 +1,5 @@
-#ifndef __BLUEPILL_UART_DMA__
-#define __BLUEPILL_UART_DMA__
+#ifndef __BLUEPILL_DMA__
+#define __BLUEPILL_DMA__
 
 #include "FreeRTOS.h"
 #include "queue.h"
@@ -15,6 +15,5 @@
 typedef struct usart_t usart_t;
 
 void dma1_init(void);
-void uart1_init(void);
 
-#endif /* __BLUEPILL_UART_DMA__ */
+#endif /* __BLUEPILL_DMA__ */
