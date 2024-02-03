@@ -30,6 +30,22 @@ void uart1_init(void)
 	return;
 }
 
+void usart_rx(void *args __attribute((unused)))
+{
+	while(1)
+	{
+		taskYIELD();
+	}
+}
+
+void usart_tx(void *args __attribute((unused)))
+{
+	while(1)
+	{
+		taskYIELD();
+	}
+}
+
 void usart1_isr(void)
 {
 	BaseType_t xHigherPriorityTaskWoken = pdFALSE;
