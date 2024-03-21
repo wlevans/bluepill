@@ -54,6 +54,13 @@ void usart_tx(void *args __attribute((unused)))
 	}
 }
 
+void usart_process_data(const uint8_t * data, const size_t length)
+{
+	// To do:
+	// Process data received over USART.
+	return;
+}
+
 void dma1_init(void)
 {
 	// Enable clock.
@@ -106,6 +113,9 @@ void usart1_isr(void)
 {
 	BaseType_t xHigherPriorityTaskWoken = pdFALSE;
 
+	// To do:
+	// Check for idle line interrupt.
+
 	portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
 	return;
 }
@@ -113,6 +123,12 @@ void usart1_isr(void)
 void dma1_channel5_isr(void)
 {
 	BaseType_t xHigherPriorityTaskWoken = pdFALSE;
+
+	// To do:
+	// Check for half transfer complete interrupt.
+
+	// To do:
+	// check for transfer complete interrupt.
 
 	portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
 	return;
