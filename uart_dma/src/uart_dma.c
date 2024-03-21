@@ -1,13 +1,58 @@
-#include <dma.h>
+#include "uart_dma.h"
+
+#include "FreeRTOS.h"
+#include "task.h"
+
+#include <libopencm3/stm32/usart.h>
+#include <libopencm3/stm32/dma.h>
 #include <libopencm3/stm32/rcc.h>
 #include <libopencm3/stm32/gpio.h>
 #include <libopencm3/cm3/nvic.h>
 
-#define RX_BUFFER_SIZE  4
-#define TX_BUFFER_SIZE  4
-
 uint8_t uart_rx_buffer[RX_BUFFER_SIZE];
 uint8_t uart_tx_buffer[TX_BUFFER_SIZE];
+
+void uart1_init(void)
+{
+	// Enable clocks.
+	rcc_periph_clock_enable(RCC_GPIOA);
+	rcc_periph_clock_enable(RCC_USART1);
+	// Configure USART 1.
+	gpio_set_mode(GPIOA, GPIO_MODE_OUTPUT_50_MHZ, GPIO_CNF_OUTPUT_ALTFN_PUSHPULL, GPIO_USART1_TX);
+	gpio_set_mode(GPIOA, GPIO_MODE_INPUT, GPIO_CNF_INPUT_FLOAT, GPIO_USART1_RX);
+	usart_set_baudrate(USART1, 38400);
+	usart_set_databits(USART1, 8);
+	usart_set_parity(USART1, USART_PARITY_NONE);
+	usart_set_stopbits(USART1, USART_STOPBITS_1);
+	usart_set_mode(USART1, USART_MODE_TX_RX);
+	usart_set_flow_control(USART1, USART_FLOWCONTROL_NONE);
+	// Enable USART RX interrupt.
+	usart_enable_rx_interrupt(USART1);
+	// Set USART 1 interrupt priority.
+	nvic_set_priority(NVIC_USART1_IRQ, 0xCF);
+	// Enable USART 1 interrupt.
+	nvic_enable_irq(NVIC_USART1_IRQ);
+	// Enable USART.
+	usart_enable(USART1);
+
+	return;
+}
+
+void usart_rx(void *args __attribute((unused)))
+{
+	while(1)
+	{
+		taskYIELD();
+	}
+}
+
+void usart_tx(void *args __attribute((unused)))
+{
+	while(1)
+	{
+		taskYIELD();
+	}
+}
 
 void dma1_init(void)
 {
@@ -54,6 +99,14 @@ void dma1_init(void)
 	// Enable DMA 1 Channel 5.
 	dma_enable_channel(DMA1, DMA_CHANNEL5);
 
+	return;
+}
+
+void usart1_isr(void)
+{
+	BaseType_t xHigherPriorityTaskWoken = pdFALSE;
+
+	portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
 	return;
 }
 

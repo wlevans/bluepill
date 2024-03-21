@@ -8,8 +8,7 @@
 #include <libopencm3/cm3/nvic.h>
 
 #include "led.h"
-#include "uart.h"
-#include "dma.h"
+#include "uart_dma.h"
 
 EventGroupHandle_t uart_dma_eventgroup;
 
