@@ -3,11 +3,11 @@
 #include "FreeRTOS.h"
 #include "task.h"
 
-#include <libopencm3/stm32/usart.h>
-#include <libopencm3/stm32/dma.h>
-#include <libopencm3/stm32/rcc.h>
-#include <libopencm3/stm32/gpio.h>
 #include <libopencm3/cm3/nvic.h>
+#include <libopencm3/stm32/dma.h>
+#include <libopencm3/stm32/gpio.h>
+#include <libopencm3/stm32/rcc.h>
+#include <libopencm3/stm32/usart.h>
 
 uint8_t uart_rx_buffer[RX_BUFFER_SIZE];
 uint8_t uart_tx_buffer[TX_BUFFER_SIZE];
@@ -58,6 +58,16 @@ void usart_process_data(const uint8_t * data, const size_t length)
 {
 	// To do:
 	// Process data received over USART.
+
+	for(size_t i = 0; i < length; ++i)
+	{
+		while(!usart_get_flag(USART1, USART_SR_TXE))
+		{
+			taskYIELD();
+		}
+		usart_send(USART1, data[i]);
+	}
+
 	return;
 }
 

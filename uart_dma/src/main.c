@@ -10,6 +10,7 @@
 #include "led.h"
 #include "uart_dma.h"
 
+// To do: Should event group go here or in uart_dma.*?
 EventGroupHandle_t uart_dma_eventgroup;
 
 int main(void)
