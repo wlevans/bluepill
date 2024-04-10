@@ -2,6 +2,7 @@
 
 #include "FreeRTOS.h"
 #include "task.h"
+#include "event_groups.h"
 
 #include <libopencm3/cm3/nvic.h>
 #include <libopencm3/stm32/dma.h>
@@ -9,8 +10,15 @@
 #include <libopencm3/stm32/rcc.h>
 #include <libopencm3/stm32/usart.h>
 
+#define EVENT_IDLE     0x001
+#define EVENT_HALF_TX  0x002
+#define EVENT_TX_COMPL 0x004
+
 uint8_t uart_rx_buffer[RX_BUFFER_SIZE];
 uint8_t uart_tx_buffer[TX_BUFFER_SIZE];
+
+// To do: Should event group go here or in uart_dma.*?
+EventGroupHandle_t uart_dma_eventgroup;
 
 void uart1_init(void)
 {
@@ -34,6 +42,8 @@ void uart1_init(void)
 	nvic_enable_irq(NVIC_USART1_IRQ);
 	// Enable USART.
 	usart_enable(USART1);
+
+	uart_dma_eventgroup = xEventGroupCreate();
 
 	return;
 }
@@ -126,6 +136,8 @@ void usart1_isr(void)
 	// To do:
 	// Check for idle line interrupt.
 
+	// Set idle bit.
+	xEventGroupSetBitsFromISR(uart_dma_eventgroup, EVENT_IDLE, &xHigherPriorityTaskWoken);
 	portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
 	return;
 }
@@ -136,9 +148,13 @@ void dma1_channel5_isr(void)
 
 	// To do:
 	// Check for half transfer complete interrupt.
+	// Set half transfer bit.
+	xEventGroupSetBitsFromISR(uart_dma_eventgroup, EVENT_HALF_TX, &xHigherPriorityTaskWoken);
 
 	// To do:
 	// check for transfer complete interrupt.
+	// Set transfer complete bit.
+	xEventGroupSetBitsFromISR(uart_dma_eventgroup, EVENT_TX_COMPL, &xHigherPriorityTaskWoken);
 
 	portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
 	return;

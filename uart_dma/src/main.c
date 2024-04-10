@@ -10,9 +10,6 @@
 #include "led.h"
 #include "uart_dma.h"
 
-// To do: Should event group go here or in uart_dma.*?
-EventGroupHandle_t uart_dma_eventgroup;
-
 int main(void)
 {
 	// Set up clock.
@@ -23,8 +20,6 @@ int main(void)
 	uart1_init();
 	// Initialize DMA 1.
 	dma1_init();
-
-	uart_dma_eventgroup = xEventGroupCreate();
 
 	// Create FreeRTOS tasks.
 	xTaskCreate(usart_rx, "usart_rx", 256, NULL, configMAX_PRIORITIES - 1, NULL);
