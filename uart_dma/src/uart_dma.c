@@ -21,9 +21,6 @@ uint8_t uart_tx_buffer[TX_BUFFER_SIZE];
 // To do: Should event group go here or in uart_dma.*?
 EventGroupHandle_t uart_dma_eventgroup;
 
-// Hidden function prototypes.
-void process_data(uint8_t * const buffer, size_t length);
-
 void uart1_init(void)
 {
 	// Enable clocks.
@@ -72,15 +69,15 @@ void usart_rx(void *args __attribute((unused)))
 		if(rx_buffer_head > rx_buffer_tail)
 		{
 			// Linear mode.
-			process_data(&uart_rx_buffer[rx_buffer_tail], rx_buffer_head - rx_buffer_tail);
+			usart_process_data(&uart_rx_buffer[rx_buffer_tail], rx_buffer_head - rx_buffer_tail);
 		}
 		else if(rx_buffer_head < rx_buffer_tail)
 		{
 			// Overflow mode.
 			// Process data at the end of the USART RX buffer.
-			process_data(&uart_rx_buffer[rx_buffer_tail], RX_BUFFER_SIZE - rx_buffer_tail);
+			usart_process_data(&uart_rx_buffer[rx_buffer_tail], RX_BUFFER_SIZE - rx_buffer_tail);
 			// Process data at the beginning of the USART RX buffer.
-			process_data(&uart_rx_buffer[0], rx_buffer_head);
+			usart_process_data(&uart_rx_buffer[0], rx_buffer_head);
 		}
 		// Update tail position.
 		rx_buffer_tail = rx_buffer_head;
@@ -162,12 +159,6 @@ void dma1_init(void)
 	// Enable DMA 1 Channel 5.
 	dma_enable_channel(DMA1, DMA_CHANNEL5);
 
-	return;
-}
-
-void process_data(uint8_t * const buffer, size_t length)
-{
-	// To do: add code to process data.
 	return;
 }
 
