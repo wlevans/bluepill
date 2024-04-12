@@ -135,4 +135,12 @@ NVIC value of 255. */
 #define xPortPendSVHandler	pend_sv_handler
 #define xPortSysTickHandler	sys_tick_handler
 
+/* To do: Reorganize */
+#define INCLUDE_xEventGroupSetBitFromISR 1
+#define INCLUDE_xTimerPendFunctionCall 1
+#define configUSE_TIMERS 1
+#define configTIMER_TASK_PRIORITY 2
+#define configTIMER_QUEUE_LENGTH 10
+#define configTIMER_TASK_STACK_DEPTH (configMINIMAL_STACK_SIZE * 2)
+
 #endif /* FREERTOS_CONFIG_H */

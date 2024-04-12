@@ -24,6 +24,7 @@ SRCFILES += ${RTOS}/port.c
 SRCFILES += ${RTOS}/queue.c
 SRCFILES += ${RTOS}/tasks.c
 SRCFILES += ${RTOS}/event_groups.c
+SRCFILES += ${RTOS}/timers.c
 
 # Object file(s) to build.
 TEMP1 = $(patsubst %.c,%.o,$(SRCFILES))

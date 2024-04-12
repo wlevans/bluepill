@@ -3,6 +3,7 @@
 #include "FreeRTOS.h"
 #include "task.h"
 #include "event_groups.h"
+#include "timers.h"
 
 #include <libopencm3/cm3/nvic.h>
 #include <libopencm3/stm32/dma.h>
@@ -52,7 +53,11 @@ void usart_rx(void *args __attribute((unused)))
 {
 	while(1)
 	{
-		taskYIELD();
+		xEventGroupWaitBits(uart_dma_eventgroup,
+				EVENT_IDLE | EVENT_HALF_TX | EVENT_TX_COMPL,
+				pdTRUE,
+				pdFALSE,
+				portMAX_DELAY);
 	}
 }
 
@@ -133,12 +138,13 @@ void usart1_isr(void)
 {
 	BaseType_t xHigherPriorityTaskWoken = pdFALSE;
 
-	// To do:
-	// Check for idle line interrupt.
-
-	// Set idle bit.
-	xEventGroupSetBitsFromISR(uart_dma_eventgroup, EVENT_IDLE, &xHigherPriorityTaskWoken);
-	portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
+	// Test for idle line interrupt.
+	if(usart_get_flag(USART1, USART_SR_IDLE))
+	{
+		// Set idle bit.
+		xEventGroupSetBitsFromISR(uart_dma_eventgroup, EVENT_IDLE, &xHigherPriorityTaskWoken);
+		portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
+	}
 	return;
 }
 
@@ -146,16 +152,19 @@ void dma1_channel5_isr(void)
 {
 	BaseType_t xHigherPriorityTaskWoken = pdFALSE;
 
-	// To do:
-	// Check for half transfer complete interrupt.
-	// Set half transfer bit.
-	xEventGroupSetBitsFromISR(uart_dma_eventgroup, EVENT_HALF_TX, &xHigherPriorityTaskWoken);
-
-	// To do:
-	// check for transfer complete interrupt.
-	// Set transfer complete bit.
-	xEventGroupSetBitsFromISR(uart_dma_eventgroup, EVENT_TX_COMPL, &xHigherPriorityTaskWoken);
-
-	portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
+	// Test for half transfer complete interrupt.
+	if(dma_get_interrupt_flag(DMA1, DMA_CHANNEL5, DMA_HTIF))
+	{
+		// Set half transfer bit.
+		xEventGroupSetBitsFromISR(uart_dma_eventgroup, EVENT_HALF_TX, &xHigherPriorityTaskWoken);
+		portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
+	}
+	// Test for transfer complete interrupt.
+	if(dma_get_interrupt_flag(DMA1, DMA_CHANNEL5, DMA_TCIF))
+	{
+		// Set transfer complete bit.
+		xEventGroupSetBitsFromISR(uart_dma_eventgroup, EVENT_TX_COMPL, &xHigherPriorityTaskWoken);
+		portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
+	}
 	return;
 }
