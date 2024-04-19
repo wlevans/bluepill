@@ -1,5 +1,7 @@
 #include "uart_dma.h"
 
+#include <string.h>
+
 #include "FreeRTOS.h"
 #include "task.h"
 #include "event_groups.h"
@@ -23,9 +25,13 @@ EventGroupHandle_t uart_dma_eventgroup;
 
 void uart1_init(void)
 {
+	uart_dma_eventgroup = xEventGroupCreate();
+
 	// Enable clocks.
 	rcc_periph_clock_enable(RCC_GPIOA);
 	rcc_periph_clock_enable(RCC_USART1);
+	rcc_periph_clock_enable(RCC_DMA1);
+
 	// Configure USART 1.
 	gpio_set_mode(GPIOA, GPIO_MODE_OUTPUT_50_MHZ, GPIO_CNF_OUTPUT_ALTFN_PUSHPULL, GPIO_USART1_TX);
 	gpio_set_mode(GPIOA, GPIO_MODE_INPUT, GPIO_CNF_INPUT_FLOAT, GPIO_USART1_RX);
@@ -35,24 +41,54 @@ void uart1_init(void)
 	usart_set_stopbits(USART1, USART_STOPBITS_1);
 	usart_set_mode(USART1, USART_MODE_TX_RX);
 	usart_set_flow_control(USART1, USART_FLOWCONTROL_NONE);
-	// Enable USART RX interrupt.
-	usart_enable_rx_interrupt(USART1);
+	// Enable USART idle interrupt.
+	usart_enable_idle_interrupt(USART1);
 	// Set USART 1 interrupt priority.
 	nvic_set_priority(NVIC_USART1_IRQ, 0xCF);
 	// Enable USART 1 interrupt.
 	nvic_enable_irq(NVIC_USART1_IRQ);
+
+	usart_enable_rx_dma(USART1);
+
 	// Enable USART.
 	usart_enable(USART1);
 
-	uart_dma_eventgroup = xEventGroupCreate();
+
+	// Configure DMA Channel 5 for USART1 RX.
+	dma_channel_reset(DMA1, DMA_CHANNEL5);
+	dma_enable_circular_mode(DMA1, DMA_CHANNEL5);
+	dma_set_priority(DMA1, DMA_CHANNEL5, DMA_CCR_PL_HIGH);
+	// Configure peripheral.
+	dma_set_read_from_peripheral(DMA1, DMA_CHANNEL5);
+	dma_set_peripheral_address(DMA1, DMA_CHANNEL5, (uint32_t)&USART1_DR);
+	dma_set_peripheral_size(DMA1, DMA_CHANNEL5, DMA_CCR_PSIZE_8BIT);
+	dma_disable_peripheral_increment_mode(DMA1, DMA_CHANNEL5);
+	// Configure memory.
+	dma_set_memory_address(DMA1, DMA_CHANNEL5, (uint32_t)uart_rx_buffer);
+	dma_set_number_of_data(DMA1, DMA_CHANNEL5, RX_BUFFER_SIZE);
+	dma_set_memory_size(DMA1, DMA_CHANNEL5, DMA_CCR_MSIZE_8BIT);
+	dma_enable_memory_increment_mode(DMA1, DMA_CHANNEL5);
+	// Enable interrupts.
+	dma_enable_half_transfer_interrupt(DMA1, DMA_CHANNEL5);
+	dma_enable_transfer_complete_interrupt(DMA1, DMA_CHANNEL5);
+	// Set interrupt priority.
+	nvic_set_priority(NVIC_DMA1_CHANNEL5_IRQ, 0xCF);
+	// Enable interrupt.
+	nvic_enable_irq(NVIC_DMA1_CHANNEL5_IRQ);
+	// Enable DMA 1 Channel 5.
+	dma_enable_channel(DMA1, DMA_CHANNEL5);
+
+
+
+
 
 	return;
 }
 
 void usart_rx(void *args __attribute((unused)))
 {
-	static size_t rx_buffer_tail;	// Tail of the UART RX buffer.
-	size_t rx_buffer_head;			// Head of the UART RX buffer.
+	static uint16_t rx_buffer_tail = 0;	// Tail of the UART RX buffer.
+	uint16_t rx_buffer_head;				// Head of the UART RX buffer.
 
 	while(1)
 	{
@@ -102,6 +138,20 @@ void usart_process_data(const uint8_t * data, const size_t length)
 	// To do:
 	// Process data received over USART.
 
+	char header[] = "\x1B[32m";
+	char footer[] = "\x1B[39m";
+
+	// Transmit header.
+	for(size_t i = 0; i < strlen(header); ++i)
+	{
+		while(!usart_get_flag(USART1, USART_SR_TXE))
+		{
+			taskYIELD();
+		}
+		usart_send(USART1, header[i]);
+	}
+
+	// Echo back message.
 	for(size_t i = 0; i < length; ++i)
 	{
 		while(!usart_get_flag(USART1, USART_SR_TXE))
@@ -111,53 +161,15 @@ void usart_process_data(const uint8_t * data, const size_t length)
 		usart_send(USART1, data[i]);
 	}
 
-	return;
-}
-
-void dma1_init(void)
-{
-	// Enable clock.
-	rcc_periph_clock_enable(RCC_DMA1);
-
-//	// Configure DMA Channel 4 for USART1 TX.
-//	dma_channel_reset(DMA1,DMA_CHANNEL4);
-//	dma_set_priority(DMA1, DMA_CHANNEL4, DMA_CCR_PL_HIGH);
-//	// Configure peripheral.
-//	dma_set_peripheral_address(DMA1, DMA_CHANNEL4, (uint32_t)&USART1_DR);
-//	dma_set_peripheral_size(DMA1, DMA_CHANNEL4, DMA_CCR_PSIZE_8BIT);
-//	dma_disable_peripheral_increment_mode(DMA1, DMA_CHANNEL4);
-//	// Configure memory.
-//	dma_set_read_from_memory(DMA1,DMA_CHANNEL4);
-//	dma_set_memory_address(DMA1, DMA_CHANNEL4, (uint32_t)uart_tx_buffer);
-//	dma_set_number_of_data(DMA1, DMA_CHANNEL4, TX_BUFFER_SIZE);
-//	dma_set_memory_size(DMA1,DMA_CHANNEL4,DMA_CCR_MSIZE_8BIT);
-//	dma_enable_memory_increment_mode(DMA1,DMA_CHANNEL4);
-//	// Enable DMA 1 Channel 4.
-//	dma_enable_channel(DMA1, DMA_CHANNEL4);
-
-	// Configure DMA Channel 5 for USART1 RX.
-	dma_channel_reset(DMA1, DMA_CHANNEL5);
-	dma_enable_circular_mode(DMA1, DMA_CHANNEL5);
-	dma_set_priority(DMA1, DMA_CHANNEL5, DMA_CCR_PL_HIGH);
-	// Configure peripheral.
-	dma_set_read_from_peripheral(DMA1, DMA_CHANNEL5);
-	dma_set_peripheral_address(DMA1, DMA_CHANNEL5, (uint32_t)&USART1_DR);
-	dma_set_peripheral_size(DMA1, DMA_CHANNEL5, DMA_CCR_PSIZE_8BIT);
-	dma_disable_peripheral_increment_mode(DMA1, DMA_CHANNEL5);
-	// Configure memory.
-	dma_set_memory_address(DMA1, DMA_CHANNEL5, (uint32_t)uart_rx_buffer);
-	dma_set_number_of_data(DMA1, DMA_CHANNEL5, RX_BUFFER_SIZE);
-	dma_set_memory_size(DMA1, DMA_CHANNEL5, DMA_CCR_MSIZE_8BIT);
-	dma_enable_memory_increment_mode(DMA1, DMA_CHANNEL5);
-	// Enable interrupts.
-	dma_enable_half_transfer_interrupt(DMA1, DMA_CHANNEL5);
-	dma_enable_transfer_complete_interrupt(DMA1, DMA_CHANNEL5);
-	// Set interrupt priority.
-	nvic_set_priority(NVIC_DMA1_CHANNEL5_IRQ, 0xCF);
-	// Enable interrupt.
-	nvic_enable_irq(NVIC_DMA1_CHANNEL5_IRQ);
-	// Enable DMA 1 Channel 5.
-	dma_enable_channel(DMA1, DMA_CHANNEL5);
+	// Transmit footer.
+	for(size_t i = 0; i < strlen(footer); ++i)
+	{
+		while(!usart_get_flag(USART1, USART_SR_TXE))
+		{
+			taskYIELD();
+		}
+		usart_send(USART1, footer[i]);
+	}
 
 	return;
 }
@@ -169,6 +181,9 @@ void usart1_isr(void)
 	// Test for idle line interrupt.
 	if(usart_get_flag(USART1, USART_SR_IDLE))
 	{
+		// Clear interrupt.
+		uint32_t reg = USART_SR(USART1);
+		reg = USART_DR(USART1);
 		// Set idle bit.
 		xEventGroupSetBitsFromISR(uart_dma_eventgroup, EVENT_IDLE, &xHigherPriorityTaskWoken);
 		portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
@@ -194,5 +209,6 @@ void dma1_channel5_isr(void)
 		xEventGroupSetBitsFromISR(uart_dma_eventgroup, EVENT_TX_COMPL, &xHigherPriorityTaskWoken);
 		portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
 	}
+	dma_clear_interrupt_flags(DMA1, DMA_CHANNEL5, DMA_HTIF | DMA_TCIF);
 	return;
 }
