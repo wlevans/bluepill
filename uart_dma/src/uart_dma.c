@@ -25,6 +25,8 @@ EventGroupHandle_t uart_dma_eventgroup;
 
 void uart1_init(void)
 {
+	// To do: Organize code.
+
 	uart_dma_eventgroup = xEventGroupCreate();
 
 	// Enable clocks.
@@ -127,6 +129,7 @@ void usart_rx(void *args __attribute((unused)))
 
 void usart_tx(void *args __attribute((unused)))
 {
+	// To do: Implement.
 	while(1)
 	{
 		taskYIELD();
@@ -139,8 +142,9 @@ void usart_process_data(const uint8_t * data, const size_t length)
 	// Process data received over USART.
 
 	char header[] = "\x1B[32m";
-	char footer[] = "\x1B[39m";
+	char footer[] = "\x1B[39m\r\n";
 
+	// To do: Move echoing to usart_tx task.
 	// Transmit header.
 	for(size_t i = 0; i < strlen(header); ++i)
 	{
