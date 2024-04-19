@@ -20,13 +20,12 @@
 uint8_t uart_rx_buffer[RX_BUFFER_SIZE];
 uint8_t uart_tx_buffer[TX_BUFFER_SIZE];
 
-// To do: Should event group go here or in uart_dma.*?
+// Event group.
 EventGroupHandle_t uart_dma_eventgroup;
 
 void uart1_init(void)
 {
-	// To do: Organize code.
-
+	// Create event group.
 	uart_dma_eventgroup = xEventGroupCreate();
 
 	// Enable clocks.
@@ -43,46 +42,33 @@ void uart1_init(void)
 	usart_set_stopbits(USART1, USART_STOPBITS_1);
 	usart_set_mode(USART1, USART_MODE_TX_RX);
 	usart_set_flow_control(USART1, USART_FLOWCONTROL_NONE);
-	// Enable USART idle interrupt.
-	usart_enable_idle_interrupt(USART1);
-	// Set USART 1 interrupt priority.
-	nvic_set_priority(NVIC_USART1_IRQ, 0xCF);
-	// Enable USART 1 interrupt.
-	nvic_enable_irq(NVIC_USART1_IRQ);
-
-	usart_enable_rx_dma(USART1);
-
-	// Enable USART.
-	usart_enable(USART1);
-
 
 	// Configure DMA Channel 5 for USART1 RX.
 	dma_channel_reset(DMA1, DMA_CHANNEL5);
 	dma_enable_circular_mode(DMA1, DMA_CHANNEL5);
 	dma_set_priority(DMA1, DMA_CHANNEL5, DMA_CCR_PL_HIGH);
-	// Configure peripheral.
 	dma_set_read_from_peripheral(DMA1, DMA_CHANNEL5);
 	dma_set_peripheral_address(DMA1, DMA_CHANNEL5, (uint32_t)&USART1_DR);
 	dma_set_peripheral_size(DMA1, DMA_CHANNEL5, DMA_CCR_PSIZE_8BIT);
 	dma_disable_peripheral_increment_mode(DMA1, DMA_CHANNEL5);
-	// Configure memory.
 	dma_set_memory_address(DMA1, DMA_CHANNEL5, (uint32_t)uart_rx_buffer);
 	dma_set_number_of_data(DMA1, DMA_CHANNEL5, RX_BUFFER_SIZE);
 	dma_set_memory_size(DMA1, DMA_CHANNEL5, DMA_CCR_MSIZE_8BIT);
 	dma_enable_memory_increment_mode(DMA1, DMA_CHANNEL5);
-	// Enable interrupts.
+
+	// Configure and enable interrupts.
+	usart_enable_idle_interrupt(USART1);
+	nvic_set_priority(NVIC_USART1_IRQ, 0xCF);
+	nvic_enable_irq(NVIC_USART1_IRQ);
 	dma_enable_half_transfer_interrupt(DMA1, DMA_CHANNEL5);
 	dma_enable_transfer_complete_interrupt(DMA1, DMA_CHANNEL5);
-	// Set interrupt priority.
 	nvic_set_priority(NVIC_DMA1_CHANNEL5_IRQ, 0xCF);
-	// Enable interrupt.
 	nvic_enable_irq(NVIC_DMA1_CHANNEL5_IRQ);
-	// Enable DMA 1 Channel 5.
+
+	// Enable USART and DMA
 	dma_enable_channel(DMA1, DMA_CHANNEL5);
-
-
-
-
+	usart_enable_rx_dma(USART1);
+	usart_enable(USART1);
 
 	return;
 }
@@ -185,9 +171,11 @@ void usart1_isr(void)
 	// Test for idle line interrupt.
 	if(usart_get_flag(USART1, USART_SR_IDLE))
 	{
-		// Clear interrupt.
-		uint32_t reg = USART_SR(USART1);
-		reg = USART_DR(USART1);
+		// Clear interrupt. This is done by a read from the status register
+		// followed by read from the data register.
+		USART_SR(USART1);
+		USART_DR(USART1);
+
 		// Set idle bit.
 		xEventGroupSetBitsFromISR(uart_dma_eventgroup, EVENT_IDLE, &xHigherPriorityTaskWoken);
 		portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
