@@ -65,7 +65,7 @@ void uart1_init(void)
 	nvic_set_priority(NVIC_DMA1_CHANNEL5_IRQ, 0xCF);
 	nvic_enable_irq(NVIC_DMA1_CHANNEL5_IRQ);
 
-	// Enable USART and DMA
+	// Enable USART and DMA.
 	dma_enable_channel(DMA1, DMA_CHANNEL5);
 	usart_enable_rx_dma(USART1);
 	usart_enable(USART1);
