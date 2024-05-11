@@ -33,16 +33,6 @@ rbuf_t rbuf_init(void * buffer, size_t capacity)
 	return rbuf;
 }
 
- void rbuf_free(rbuf_t * rbuf)
-{
-	// Ring buffer handle cannot be NULL.
-	assert(rbuf);
-	free(rbuf->buffer);
-	free(rbuf);
-
-	return;
-}
-
 void rbuf_reset(rbuf_t * rbuf)
 {
 	// Ring buffer handle cannot be NULL..

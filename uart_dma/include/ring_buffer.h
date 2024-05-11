@@ -53,18 +53,6 @@ typedef enum
 rbuf_t rbuf_init(void * buffer, size_t capacity);
 
 /*!
- * @brief Free ring buffer.
- *
- * This does not free the data buffer in memory. The data buffer was created by
- * the user so it is up to the user to free it.
- *
- * @param[in] rbuf Handle to ring buffer.
- *
- * @return void.
- */
-void rbuf_free(rbuf_t * rbuf);
-
-/*!
  * @brief Resets ring buffer.
  *
  * @param[in] rbuf Handle to ring buffer.
