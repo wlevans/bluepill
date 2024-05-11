@@ -1,4 +1,5 @@
 #include "uart_dma.h"
+#include "ring_buffer.h"
 
 #include <string.h>
 
@@ -17,10 +18,12 @@
 #define EVENT_RX_IRQ_HALF_TX  0x002
 #define EVENT_RX_IRQ_TX_COMPL 0x004
 #define EVENT_TX_IRQ_TX_COMPL 0x008
-#define EVENT_RINGBUFFER_RDY  0x010
+#define EVENT_DATA_READY      0x010
 
 uint8_t uart_rx_buffer[RX_BUFFER_SIZE];
 uint8_t uart_tx_buffer[TX_BUFFER_SIZE];
+uint8_t uart_tx_rbuf_data[TX_RBUF_SIZE];
+rbuf_t uart_tx_rbuf;
 
 // Event group.
 EventGroupHandle_t uart_dma_eventgroup;
@@ -29,6 +32,8 @@ void uart1_init(void)
 {
 	// Create event group.
 	uart_dma_eventgroup = xEventGroupCreate();
+	// Initialize TX ring buffer.
+	uart_tx_rbuf = rbuf_init(&uart_tx_rbuf_data, TX_RBUF_SIZE);
 
 	// Enable clocks.
 	rcc_periph_clock_enable(RCC_GPIOA);
@@ -72,16 +77,20 @@ void uart1_init(void)
 	usart_enable_idle_interrupt(USART1);
 	nvic_set_priority(NVIC_USART1_IRQ, 0xCF);
 	nvic_enable_irq(NVIC_USART1_IRQ);
+
 	dma_enable_half_transfer_interrupt(DMA1, DMA_CHANNEL5);
 	dma_enable_transfer_complete_interrupt(DMA1, DMA_CHANNEL5);
 	nvic_set_priority(NVIC_DMA1_CHANNEL5_IRQ, 0xCF);
 	nvic_enable_irq(NVIC_DMA1_CHANNEL5_IRQ);
+
 	dma_enable_transfer_complete_interrupt(DMA1, DMA_CHANNEL4);
+	nvic_set_priority(NVIC_DMA1_CHANNEL4_IRQ, 0xCF);
 	nvic_enable_irq(NVIC_DMA1_CHANNEL4_IRQ);
 
 	// Enable USART and DMA.
 	dma_enable_channel(DMA1, DMA_CHANNEL5);
 	usart_enable_rx_dma(USART1);
+	usart_enable_tx_dma(USART1);
 	usart_enable(USART1);
 
 	return;
@@ -131,59 +140,53 @@ void usart_tx(void *args __attribute((unused)))
 {
 	while(1)
 	{
-		// Wait for an interrupt to change one of the event group bits.
+		// Wait for a change in one of the event gropu bits.
+		// EVENT_TX_IRQ_TX_COMPL indicates the previous transmit is complet.
+		// EVENT_DATA_READY indicates new data is ready.
 		xEventGroupWaitBits(uart_dma_eventgroup,
-				EVENT_TX_IRQ_TX_COMPL | EVENT_RINGBUFFER_RDY,
+				EVENT_TX_IRQ_TX_COMPL | EVENT_DATA_READY,
 				pdTRUE,
 				pdFALSE,
 				portMAX_DELAY);
-		// To do:
+
 		// Test if transfer is currently in-active.
-		// Transfer data in ringbuffer over UART.
+		if(0 == dma_get_number_of_data(DMA1, DMA_CHANNEL4) &&
+           !rbuf_empty(&uart_tx_rbuf))
+		{
+			// Disable DMA channel.
+			dma_disable_channel(DMA1, DMA_CHANNEL4);
+			// To do: Is clearing interrupt flags necessary?
+			// Clear all interrupt flags.
+			dma_clear_interrupt_flags(DMA1, DMA_CHANNEL4, DMA_TEIF | DMA_HTIF | DMA_TCIF | DMA_GIF);
+			// Determine length of transfer.
+			size_t length = rbuf_size(&uart_tx_rbuf);
+			if(length > TX_BUFFER_SIZE)
+			{
+				length = TX_BUFFER_SIZE;
+			}
+			dma_set_number_of_data(DMA1, DMA_CHANNEL4, length);
+			// Get data to transfer.
+			rbuf_pop(&uart_tx_rbuf, uart_tx_buffer, length);
+			// Set memory address.
+			dma_set_memory_address(DMA1, DMA_CHANNEL4, (uint32_t)uart_tx_buffer);
+			// Start transfer.
+			dma_enable_channel(DMA1, DMA_CHANNEL4);
+		}
 	}
+	return;
 }
 
 void usart_process_data(const uint8_t * data, const size_t length)
 {
-	// To do:
-	// Add header to ringbuffer.
-	// Add data to ringbuffer.
-	// Add footer to ringbuffer.
-	// Signal usart_tx task that there is data in the ringbuffer.
-
-	char header[] = "\x1B[32m";
-	char footer[] = "\x1B[39m\r\n";
-
-	// To do: Move echoing to usart_tx task.
-	// Transmit header.
-	for(size_t i = 0; i < strlen(header); ++i)
+	// If length is zero then return.
+	if(0 == length)
 	{
-		while(!usart_get_flag(USART1, USART_SR_TXE))
-		{
-			taskYIELD();
-		}
-		usart_send(USART1, header[i]);
+		return;
 	}
-
-	// Echo back message.
-	for(size_t i = 0; i < length; ++i)
-	{
-		while(!usart_get_flag(USART1, USART_SR_TXE))
-		{
-			taskYIELD();
-		}
-		usart_send(USART1, data[i]);
-	}
-
-	// Transmit footer.
-	for(size_t i = 0; i < strlen(footer); ++i)
-	{
-		while(!usart_get_flag(USART1, USART_SR_TXE))
-		{
-			taskYIELD();
-		}
-		usart_send(USART1, footer[i]);
-	}
+	// Process data by putting it into the TX ring buffer.
+	rbuf_push(&uart_tx_rbuf, data, length);
+	// Set data ready bit.
+	xEventGroupSetBits(uart_dma_eventgroup, EVENT_DATA_READY);
 
 	return;
 }
@@ -217,6 +220,7 @@ void dma1_channel5_isr(void)
 		// Set half transfer bit.
 		xEventGroupSetBitsFromISR(uart_dma_eventgroup, EVENT_RX_IRQ_HALF_TX, &xHigherPriorityTaskWoken);
 		portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
+		dma_clear_interrupt_flags(DMA1, DMA_CHANNEL5, DMA_HTIF);
 	}
 	// Test for transfer complete interrupt.
 	if(dma_get_interrupt_flag(DMA1, DMA_CHANNEL5, DMA_TCIF))
@@ -224,8 +228,9 @@ void dma1_channel5_isr(void)
 		// Set transfer complete bit.
 		xEventGroupSetBitsFromISR(uart_dma_eventgroup, EVENT_RX_IRQ_TX_COMPL, &xHigherPriorityTaskWoken);
 		portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
+		dma_clear_interrupt_flags(DMA1, DMA_CHANNEL5, DMA_TCIF);
 	}
-	dma_clear_interrupt_flags(DMA1, DMA_CHANNEL5, DMA_HTIF | DMA_TCIF);
+
 	return;
 }
 
@@ -239,7 +244,8 @@ void dma1_channel4_isr(void)
 		// Set transfer complete bit.
 		xEventGroupSetBitsFromISR(uart_dma_eventgroup, EVENT_TX_IRQ_TX_COMPL, &xHigherPriorityTaskWoken);
 		portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
+		dma_clear_interrupt_flags(DMA1, DMA_CHANNEL4, DMA_TCIF);
 	}
-	dma_clear_interrupt_flags(DMA1, DMA_CHANNEL4, DMA_TCIF);
+
 	return;
 }

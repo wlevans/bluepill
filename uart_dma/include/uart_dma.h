@@ -6,6 +6,7 @@
 
 #define RX_BUFFER_SIZE  8
 #define TX_BUFFER_SIZE  8
+#define TX_RBUF_SIZE    8
 
 void uart1_init(void);
 void usart_rx(void *args __attribute((unused)));
