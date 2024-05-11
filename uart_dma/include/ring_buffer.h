@@ -1,16 +1,3 @@
-/***************************************************************************//**
-* @file ring_buffer_8.h
-*
-* @brief Impliments a generic ring buffer.
-*
-* @author	William L. Evans II
-*
-* <b>History</b>
-* Date       | By  | Reason |
-* :--------: | :-: | :---------------------------------------------------------|
-* 06/01/2022 | WLE | Initial creation.
-*******************************************************************************/
-
 #ifndef _RING_BUFFER_BYTE_H_
 #define _RING_BUFFER_BYTE_H_
 

@@ -1,16 +1,3 @@
-/***************************************************************************//**
-* @file ring_buffer_8.c
-*
-* @brief Implements a ring buffer that holds bytes.
-*
-* @author	William L. Evans II
-*
-* <b>History</b>
-* Date       | By  | Reason                                                    |
-* :--------: | :-: | :---------------------------------------------------------|
-* 06/01/2022 | WLE | Initial creation.
-*******************************************************************************/
-
 #include "ring_buffer.h"
 
 rbuf_t rbuf_init(void * buffer, size_t capacity)
