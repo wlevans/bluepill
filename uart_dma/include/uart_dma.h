@@ -11,6 +11,6 @@
 void uart1_init(void);
 void usart_rx(void *args __attribute((unused)));
 void usart_tx(void *args __attribute((unused)));
-void usart_process_data(const uint8_t * data, const size_t length);
+void usart_process_data(uint8_t * data, size_t length);
 
 #endif /* __BLUEPILL_UART_DMA__ */

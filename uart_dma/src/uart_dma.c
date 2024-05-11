@@ -14,19 +14,22 @@
 #include <libopencm3/stm32/rcc.h>
 #include <libopencm3/stm32/usart.h>
 
-#define EVENT_RX_IRQ_IDLE     0x001
-#define EVENT_RX_IRQ_HALF_TX  0x002
-#define EVENT_RX_IRQ_TX_COMPL 0x004
-#define EVENT_TX_IRQ_TX_COMPL 0x008
-#define EVENT_DATA_READY      0x010
+#define EVENT_RX_IRQ_IDLE      0x001
+#define EVENT_RX_IRQ_HALF_TX   0x002
+#define EVENT_RX_IRQ_TX_COMPL  0x004
+#define EVENT_TX_IRQ_TX_COMPL  0x008
+#define EVENT_DATA_READY       0x010
 
+// USART RX and TX transfer buffers.
 uint8_t uart_rx_buffer[RX_BUFFER_SIZE];
 uint8_t uart_tx_buffer[TX_BUFFER_SIZE];
-uint8_t uart_tx_rbuf_data[TX_RBUF_SIZE];
-rbuf_t uart_tx_rbuf;
 
 // Event group.
 EventGroupHandle_t uart_dma_eventgroup;
+
+// USART TX ring buffer.
+uint8_t uart_tx_rbuf_data[TX_RBUF_SIZE];
+rbuf_t uart_tx_rbuf;
 
 void uart1_init(void)
 {
@@ -49,6 +52,10 @@ void uart1_init(void)
 	usart_set_stopbits(USART1, USART_STOPBITS_1);
 	usart_set_mode(USART1, USART_MODE_TX_RX);
 	usart_set_flow_control(USART1, USART_FLOWCONTROL_NONE);
+	usart_enable_idle_interrupt(USART1);
+	nvic_set_priority(NVIC_USART1_IRQ, 0xCF);
+	nvic_enable_irq(NVIC_USART1_IRQ);
+	usart_enable(USART1);
 
 	// Configure DMA Channel 5 for USART1 RX.
 	dma_channel_reset(DMA1, DMA_CHANNEL5);
@@ -62,6 +69,12 @@ void uart1_init(void)
 	dma_set_number_of_data(DMA1, DMA_CHANNEL5, RX_BUFFER_SIZE);
 	dma_set_memory_size(DMA1, DMA_CHANNEL5, DMA_CCR_MSIZE_8BIT);
 	dma_enable_memory_increment_mode(DMA1, DMA_CHANNEL5);
+	dma_enable_half_transfer_interrupt(DMA1, DMA_CHANNEL5);
+	dma_enable_transfer_complete_interrupt(DMA1, DMA_CHANNEL5);
+	nvic_set_priority(NVIC_DMA1_CHANNEL5_IRQ, 0xCF);
+	nvic_enable_irq(NVIC_DMA1_CHANNEL5_IRQ);
+	dma_enable_channel(DMA1, DMA_CHANNEL5);
+	usart_enable_rx_dma(USART1);
 
 	// Configure DMA Channel 4 for USART1 TX.
 	dma_channel_reset(DMA1, DMA_CHANNEL4);
@@ -72,26 +85,10 @@ void uart1_init(void)
 	dma_disable_peripheral_increment_mode(DMA1, DMA_CHANNEL4);
 	dma_set_memory_size(DMA1, DMA_CHANNEL4, DMA_CCR_MSIZE_8BIT);
 	dma_enable_memory_increment_mode(DMA1, DMA_CHANNEL4);
-
-	// Configure and enable interrupts.
-	usart_enable_idle_interrupt(USART1);
-	nvic_set_priority(NVIC_USART1_IRQ, 0xCF);
-	nvic_enable_irq(NVIC_USART1_IRQ);
-
-	dma_enable_half_transfer_interrupt(DMA1, DMA_CHANNEL5);
-	dma_enable_transfer_complete_interrupt(DMA1, DMA_CHANNEL5);
-	nvic_set_priority(NVIC_DMA1_CHANNEL5_IRQ, 0xCF);
-	nvic_enable_irq(NVIC_DMA1_CHANNEL5_IRQ);
-
 	dma_enable_transfer_complete_interrupt(DMA1, DMA_CHANNEL4);
 	nvic_set_priority(NVIC_DMA1_CHANNEL4_IRQ, 0xCF);
 	nvic_enable_irq(NVIC_DMA1_CHANNEL4_IRQ);
-
-	// Enable USART and DMA.
-	dma_enable_channel(DMA1, DMA_CHANNEL5);
-	usart_enable_rx_dma(USART1);
 	usart_enable_tx_dma(USART1);
-	usart_enable(USART1);
 
 	return;
 }
@@ -99,7 +96,7 @@ void uart1_init(void)
 void usart_rx(void *args __attribute((unused)))
 {
 	static uint16_t rx_buffer_tail = 0;	// Tail of the UART RX buffer.
-	uint16_t rx_buffer_head;				// Head of the UART RX buffer.
+	uint16_t rx_buffer_head;			// Head of the UART RX buffer.
 
 	while(1)
 	{
@@ -176,7 +173,7 @@ void usart_tx(void *args __attribute((unused)))
 	return;
 }
 
-void usart_process_data(const uint8_t * data, const size_t length)
+void usart_process_data(uint8_t * data, size_t length)
 {
 	// If length is zero then return.
 	if(0 == length)
