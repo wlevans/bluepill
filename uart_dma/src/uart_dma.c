@@ -125,11 +125,6 @@ void usart_rx(void *args __attribute((unused)))
 		}
 		// Update tail position.
 		rx_buffer_tail = rx_buffer_head;
-		// To do: Is this test necessary?
-		if(rx_buffer_tail == RX_BUFFER_SIZE)
-		{
-			rx_buffer_tail = 0;
-		}
 	}
 }
 
@@ -152,9 +147,6 @@ void usart_tx(void *args __attribute((unused)))
 		{
 			// Disable DMA channel.
 			dma_disable_channel(DMA1, DMA_CHANNEL4);
-			// To do: Is clearing interrupt flags necessary?
-			// Clear all interrupt flags.
-			dma_clear_interrupt_flags(DMA1, DMA_CHANNEL4, DMA_TEIF | DMA_HTIF | DMA_TCIF | DMA_GIF);
 			// Determine length of transfer.
 			size_t length = rbuf_size(&uart_tx_rbuf);
 			if(length > TX_BUFFER_SIZE)
