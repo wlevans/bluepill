@@ -17,7 +17,6 @@ SRC        := src
 # Source files.
 SRCFILES  = ${SRC}/main.c
 SRCFILES += ${SRC}/uart_dma.c
-SRCFILES += ${SRC}/led.c
 SRCFILES += ${SRC}/ring_buffer.c
 SRCFILES += ${RTOS}/heap_3.c
 SRCFILES += ${RTOS}/list.c
