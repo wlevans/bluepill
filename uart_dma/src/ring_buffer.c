@@ -62,13 +62,13 @@ RING_BUFFER_STATUS rbuf_push(rbuf_t * rbuf, uint8_t * data, size_t len)
 	{
 		return RING_BUFFER_FULL;
 	}
-	
+
 	// Make sure there the ring buffer has room.
 	else if(rbuf->capacity - rbuf_size(rbuf) < len)
 	{
 		return RING_BUFFER_INSUFFICIENT_SPACE;
 	}
-	
+
 	// Add data to ring buffer.
 	while(count < len)
 	{
@@ -98,9 +98,9 @@ size_t rbuf_pop(rbuf_t * rbuf, uint8_t * data, size_t len)
 	while(!rbuf_empty(rbuf) && count < len)
 	{
 		data[count++] = rbuf->buffer[rbuf->tail];
-		rbuf->tail = (rbuf->tail + 1) & (rbuf->capacity - 1);		
+		rbuf->tail = (rbuf->tail + 1) & (rbuf->capacity - 1);
 	}
-	
+
 	// Ring buffer cannot be full if we just removed data.
 	rbuf->full = false;
 	return count;

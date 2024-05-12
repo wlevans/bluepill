@@ -20,12 +20,12 @@
 #define EVENT_TX_IRQ_TX_COMPL  0x008
 #define EVENT_DATA_READY       0x010
 
+// Event group.
+EventGroupHandle_t uart_dma_eventgroup;
+
 // USART RX and TX transfer buffers.
 uint8_t uart_rx_buffer[RX_BUFFER_SIZE];
 uint8_t uart_tx_buffer[TX_BUFFER_SIZE];
-
-// Event group.
-EventGroupHandle_t uart_dma_eventgroup;
 
 // USART TX ring buffer.
 uint8_t uart_tx_rbuf_data[TX_RBUF_SIZE];
@@ -57,6 +57,20 @@ void uart1_init(void)
 	nvic_enable_irq(NVIC_USART1_IRQ);
 	usart_enable(USART1);
 
+	// Configure DMA Channel 4 for USART1 TX.
+	dma_channel_reset(DMA1, DMA_CHANNEL4);
+	dma_set_priority(DMA1, DMA_CHANNEL4, DMA_CCR_PL_HIGH);
+	dma_set_read_from_memory(DMA1, DMA_CHANNEL4);
+	dma_set_peripheral_address(DMA1, DMA_CHANNEL4, (uint32_t)&USART1_DR);
+	dma_set_peripheral_size(DMA1, DMA_CHANNEL4, DMA_CCR_PSIZE_8BIT);
+	dma_disable_peripheral_increment_mode(DMA1, DMA_CHANNEL4);
+	dma_set_memory_size(DMA1, DMA_CHANNEL4, DMA_CCR_MSIZE_8BIT);
+	dma_enable_memory_increment_mode(DMA1, DMA_CHANNEL4);
+	dma_enable_transfer_complete_interrupt(DMA1, DMA_CHANNEL4);
+	nvic_set_priority(NVIC_DMA1_CHANNEL4_IRQ, 0xCF);
+	nvic_enable_irq(NVIC_DMA1_CHANNEL4_IRQ);
+	usart_enable_tx_dma(USART1);
+
 	// Configure DMA Channel 5 for USART1 RX.
 	dma_channel_reset(DMA1, DMA_CHANNEL5);
 	dma_enable_circular_mode(DMA1, DMA_CHANNEL5);
@@ -75,20 +89,6 @@ void uart1_init(void)
 	nvic_enable_irq(NVIC_DMA1_CHANNEL5_IRQ);
 	dma_enable_channel(DMA1, DMA_CHANNEL5);
 	usart_enable_rx_dma(USART1);
-
-	// Configure DMA Channel 4 for USART1 TX.
-	dma_channel_reset(DMA1, DMA_CHANNEL4);
-	dma_set_priority(DMA1, DMA_CHANNEL4, DMA_CCR_PL_HIGH);
-	dma_set_read_from_memory(DMA1, DMA_CHANNEL4);
-	dma_set_peripheral_address(DMA1, DMA_CHANNEL4, (uint32_t)&USART1_DR);
-	dma_set_peripheral_size(DMA1, DMA_CHANNEL4, DMA_CCR_PSIZE_8BIT);
-	dma_disable_peripheral_increment_mode(DMA1, DMA_CHANNEL4);
-	dma_set_memory_size(DMA1, DMA_CHANNEL4, DMA_CCR_MSIZE_8BIT);
-	dma_enable_memory_increment_mode(DMA1, DMA_CHANNEL4);
-	dma_enable_transfer_complete_interrupt(DMA1, DMA_CHANNEL4);
-	nvic_set_priority(NVIC_DMA1_CHANNEL4_IRQ, 0xCF);
-	nvic_enable_irq(NVIC_DMA1_CHANNEL4_IRQ);
-	usart_enable_tx_dma(USART1);
 
 	return;
 }
@@ -199,6 +199,22 @@ void usart1_isr(void)
 	return;
 }
 
+void dma1_channel4_isr(void)
+{
+	BaseType_t xHigherPriorityTaskWoken = pdFALSE;
+
+	// Test for transfer complete interrupt.
+	if(dma_get_interrupt_flag(DMA1, DMA_CHANNEL4, DMA_TCIF))
+	{
+		// Set transfer complete bit.
+		xEventGroupSetBitsFromISR(uart_dma_eventgroup, EVENT_TX_IRQ_TX_COMPL, &xHigherPriorityTaskWoken);
+		portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
+		dma_clear_interrupt_flags(DMA1, DMA_CHANNEL4, DMA_TCIF);
+	}
+
+	return;
+}
+
 void dma1_channel5_isr(void)
 {
 	BaseType_t xHigherPriorityTaskWoken = pdFALSE;
@@ -218,22 +234,6 @@ void dma1_channel5_isr(void)
 		xEventGroupSetBitsFromISR(uart_dma_eventgroup, EVENT_RX_IRQ_TX_COMPL, &xHigherPriorityTaskWoken);
 		portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
 		dma_clear_interrupt_flags(DMA1, DMA_CHANNEL5, DMA_TCIF);
-	}
-
-	return;
-}
-
-void dma1_channel4_isr(void)
-{
-	BaseType_t xHigherPriorityTaskWoken = pdFALSE;
-
-	// Test for transfer complete interrupt.
-	if(dma_get_interrupt_flag(DMA1, DMA_CHANNEL4, DMA_TCIF))
-	{
-		// Set transfer complete bit.
-		xEventGroupSetBitsFromISR(uart_dma_eventgroup, EVENT_TX_IRQ_TX_COMPL, &xHigherPriorityTaskWoken);
-		portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
-		dma_clear_interrupt_flags(DMA1, DMA_CHANNEL4, DMA_TCIF);
 	}
 
 	return;
