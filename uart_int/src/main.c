@@ -4,6 +4,7 @@
 #include "task.h"
 
 #include <libopencm3/stm32/rcc.h>
+#include <libopencm3/stm32/usart.h>
 #include <libopencm3/cm3/nvic.h>
 
 #include "uart_int.h"
