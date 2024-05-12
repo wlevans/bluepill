@@ -7,7 +7,7 @@ rbuf_t rbuf_init(void * buffer, size_t capacity)
   // Ring buffer cannot be null.
   assert(NULL != buffer);
 
-  // Create ringbuffer handle to be returned to user.
+  // Create ring buffer handle to be returned to user.
   rbuf_t rbuf;
 
   // Initialize ring buffer.

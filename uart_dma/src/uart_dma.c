@@ -93,7 +93,7 @@ void uart1_init(void)
   return;
 }
 
-void usart_rx(void *args __attribute((unused)))
+void usart_rx_task(void *args __attribute((unused)))
 {
   static uint16_t rx_buffer_tail = 0;	// Tail of the UART RX buffer.
   uint16_t rx_buffer_head;			// Head of the UART RX buffer.
@@ -126,9 +126,12 @@ void usart_rx(void *args __attribute((unused)))
     // Update tail position.
     rx_buffer_tail = rx_buffer_head;
   }
+
+  // Will never get here.
+  return;
 }
 
-void usart_tx(void *args __attribute((unused)))
+void usart_tx_task(void *args __attribute((unused)))
 {
   while(1)
   {
@@ -162,6 +165,8 @@ void usart_tx(void *args __attribute((unused)))
       dma_enable_channel(DMA1, DMA_CHANNEL4);
     }
   }
+
+  // Will never get here.
   return;
 }
 
@@ -172,6 +177,7 @@ void usart_process_data(uint8_t * data, size_t length)
   {
     return;
   }
+
   // Process data by putting it into the TX ring buffer.
   rbuf_push(&uart_tx_rbuf, data, length);
   // Set data ready bit.
@@ -191,11 +197,11 @@ void usart1_isr(void)
     // followed by read from the data register.
     USART_SR(USART1);
     USART_DR(USART1);
-
     // Set idle bit.
     xEventGroupSetBitsFromISR(uart_dma_eventgroup, EVENT_RX_IRQ_IDLE, &xHigherPriorityTaskWoken);
     portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
   }
+
   return;
 }
 

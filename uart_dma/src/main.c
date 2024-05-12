@@ -17,8 +17,8 @@ int main(void)
   uart1_init();
 
   // Create FreeRTOS tasks.
-  xTaskCreate(usart_rx, "usart_rx", 256, NULL, configMAX_PRIORITIES - 1, NULL);
-  xTaskCreate(usart_tx, "usart_tx", 256, NULL, configMAX_PRIORITIES - 1, NULL);
+  xTaskCreate(usart_rx_task, "usart_rx_task", 256, NULL, configMAX_PRIORITIES - 1, NULL);
+  xTaskCreate(usart_tx_task, "usart_rx_task", 256, NULL, configMAX_PRIORITIES - 1, NULL);
 
   // Start FreeRTOS scheduler.
   vTaskStartScheduler();
