@@ -11,17 +11,17 @@
 
 int main(void)
 {
-	// Set up system clock.
-	rcc_clock_setup_pll(&rcc_hse_configs[RCC_CLOCK_HSE8_72MHZ]);
-	// Initialize USART 1 and DMA.
-	uart1_init();
+  // Set up system clock.
+  rcc_clock_setup_pll(&rcc_hse_configs[RCC_CLOCK_HSE8_72MHZ]);
+  // Initialize USART 1 and DMA.
+  uart1_init();
 
-	// Create FreeRTOS tasks.
-	xTaskCreate(usart_rx, "usart_rx", 256, NULL, configMAX_PRIORITIES - 1, NULL);
-	xTaskCreate(usart_tx, "usart_tx", 256, NULL, configMAX_PRIORITIES - 1, NULL);
+  // Create FreeRTOS tasks.
+  xTaskCreate(usart_rx, "usart_rx", 256, NULL, configMAX_PRIORITIES - 1, NULL);
+  xTaskCreate(usart_tx, "usart_tx", 256, NULL, configMAX_PRIORITIES - 1, NULL);
 
-	// Start FreeRTOS scheduler.
-	vTaskStartScheduler();
-	// Will only get here if the scheduler fails to start.
-	while(1);
+  // Start FreeRTOS scheduler.
+  vTaskStartScheduler();
+  // Will only get here if the scheduler fails to start.
+  while(1);
 }

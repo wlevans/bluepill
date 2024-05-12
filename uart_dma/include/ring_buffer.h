@@ -13,19 +13,19 @@ extern "C" {
 
 typedef struct
 {
-	uint8_t * buffer;	// Memory buffer.
-	size_t capacity;	// Number of elements stored in the ring buffer.
-	size_t head;		// Holds current head (write) position.
-	size_t tail;		// Holds current tail (read) position.
-	bool full;			// True if the buffer is full; false otherwise.
+  uint8_t * buffer;	// Memory buffer.
+  size_t capacity;	// Number of elements stored in the ring buffer.
+  size_t head;		// Holds current head (write) position.
+  size_t tail;		// Holds current tail (read) position.
+  bool full;			// True if the buffer is full; false otherwise.
 } rbuf_t;
 
 typedef enum
 {
-	RING_BUFFER_OK = 0x00,
-	RING_BUFFER_FULL,
-	RING_BUFFER_EMPTY,
-	RING_BUFFER_INSUFFICIENT_SPACE
+  RING_BUFFER_OK = 0x00,
+  RING_BUFFER_FULL,
+  RING_BUFFER_EMPTY,
+  RING_BUFFER_INSUFFICIENT_SPACE
 } RING_BUFFER_STATUS;
 
 /*!
