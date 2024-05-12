@@ -1,5 +1,5 @@
-#ifndef _RING_BUFFER_BYTE_H_
-#define _RING_BUFFER_BYTE_H_
+#ifndef __RING_BUFFER__
+#define __RING_BUFFER__
 
 #ifdef __cplusplus
 extern "C" {
@@ -111,4 +111,4 @@ size_t rbuf_capacity(rbuf_t * rbuf);
 }
 #endif
 
-#endif  // _RING_BUFFER_BYTE_H_
+#endif  /* __RING_BUFFER__ */
