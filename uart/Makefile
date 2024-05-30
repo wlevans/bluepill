@@ -10,9 +10,10 @@ STFLASH = $(shell which st-flash)
 BINARY = uart
 
 # Include path(s).
-LIBOPENCM3 := ../libopencm3
-RTOS       := ../rtos
-SRC        := src
+LIBOPENCM3   := ../libopencm3
+RTOS         := rtos
+SRC          := src
+LINKERSCRIPT := ldscript
 
 # Source files.
 SRCFILES  = ${SRC}/main.c
@@ -29,7 +30,7 @@ TEMP2 = $(patsubst %.cpp,%.o,$(TEMP1))
 OBJS  = $(patsubst %.asm,%.o,$(TEMP2))
 
 # Define linker script.
-LDSCRIPT = stm32f103c8t6.ld
+LDSCRIPT = $(LINKERSCRIPT)/stm32f103c8t6.ld
 
 # Define architecture (chip).
 LIBNAME   = opencm3_stm32f1
