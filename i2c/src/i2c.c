@@ -28,12 +28,14 @@ void i2c_init(void)
   i2c_set_dutycycle(I2C1, I2C_CCR_DUTY_DIV2);
   // Set the peripheral clock frequency.
   i2c_set_clock_frequency(I2C1, 36);
-  // Set the maximum rise time.
-  // To do: How is this determined?
-  i2c_set_trise(I2C1, 36);
   // Set the bus clock frequency.
   // To do: How is this determined?
+  // RM00008 Section 26.6.8.
   i2c_set_ccr(I2C1, 180);
+  // Set the maximum rise time.
+  // To do: How is this determined?
+  // RM00008 Section 26.6.9.
+  i2c_set_trise(I2C1, 36);
   // Enable I2C peripheral.
   i2c_peripheral_enable(I2C1);
 }
