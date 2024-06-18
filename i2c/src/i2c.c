@@ -1,6 +1,7 @@
 #include "i2c.h"
 
 #include <libopencm3/stm32/rcc.h>
+#include <libopencm3/stm32/i2c.h>
 #include <libopencm3/stm32/gpio.h>
 
 void i2c_init(void)
@@ -38,4 +39,30 @@ void i2c_init(void)
   i2c_set_trise(I2C1, 36);
   // Enable I2C peripheral.
   i2c_peripheral_enable(I2C1);
+}
+
+void i2c_write(uint32_t i2c, uint8_t * buffer, size_t length)
+{
+  return;
+}
+
+void i2c_read(uint32_t i2c, uint8_t * buffer, size_t length)
+{
+  return;
+}
+
+void i2c_write_task(void *args __attribute((unused)))
+{
+  while(1)
+  {
+  }
+  return;
+}
+
+void i2c_read_task(void *args __attribute((unused)))
+{
+  while(1)
+  {
+  }
+  return;
 }
