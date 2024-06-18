@@ -1,13 +1,9 @@
-# uart_echo
+# i2c
 
-This is a simple program that echos back all data that is received on USART1.
+This is a simple program that . . .
 
-## USART 1 Configuration
+## I2C 1 Configuration
 
 |Parameter    | Value |
 |:------------|------:|
-|Baudrate     | 38400 |
-|Data Bits    | 8     |
-|Stop Bits    | 1     |
-|Parity       | None  |
-|Flow Control | None  |
+|             |       |
