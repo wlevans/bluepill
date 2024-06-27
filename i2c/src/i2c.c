@@ -11,6 +11,8 @@ void i2c1_init(void)
   rcc_periph_clock_enable(GPIOB);
 
   // Set I2C SCL and SDA lines.
+  // PB6 => SCL1
+  // PB7 => SDA1
   gpio_set_mode(GPIOB,
                 GPIO_MODE_OUTPUT_50_MHZ,
 				GPIO_CNF_OUTPUT_ALTFN_OPENDRAIN,
@@ -35,26 +37,6 @@ void i2c1_init(void)
   i2c_set_ccr(I2C1, 180);
   // Enable I2C peripheral.
   i2c_peripheral_enable(I2C1);
-
-/*
- * To do:
- *
- * Find defautl register values:
- *   Reset
- *   Enable
- *   Start
- *   Stop
- *   Duty cycle
- *
- * Should i2c1_init(void) be i2c_init(uint32_t i2c)?
- *
- * // Disable I2C peripheral.
- * i2c_peripheral_disable(I2C1);
- * // Reset I2C peripheral.
- * i2c_reset(I2C1);
- * // Clear stop.
- * i2c_clear_stop(I2C1);
- */
 }
 
 inline void i2c_reset(uint32_t i2c)
@@ -79,6 +61,7 @@ void i2c_write_task(void *args __attribute((unused)))
 {
   while(1)
   {
+	  taskYIELD();
   }
   return;
 }
@@ -87,6 +70,7 @@ void i2c_read_task(void *args __attribute((unused)))
 {
   while(1)
   {
+	  taskYIELD();
   }
   return;
 }
