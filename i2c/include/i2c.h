@@ -7,7 +7,8 @@
 #include <stdint.h>
 #include <stdbool.h>
 
-void i2c_init(void);
+void i2c1_init(void);
+inline void i2c_reset(uint32_t i2c);
 void i2c_write(uint32_t i2c, uint8_t * buffer, size_t length);
 void i2c_read(uint32_t i2c, uint8_t * buffer, size_t length);
 
