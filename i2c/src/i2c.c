@@ -18,6 +18,7 @@ void i2c1_init(void)
 {
   // To do:
   // Pass I2C# as parameter.
+  // Add timeout feature.
 
   // Enable clocks.
   rcc_periph_clock_enable(RCC_I2C1);
@@ -29,9 +30,9 @@ void i2c1_init(void)
   gpio_set_mode(GPIOB,
                 GPIO_MODE_OUTPUT_50_MHZ,
 				GPIO_CNF_OUTPUT_ALTFN_OPENDRAIN,
-				GPIO6|GPIO7);
+				GPIO6 | GPIO7);
   // Idle SCL and SDA high.
-  gpio_set(GPIOB, GPIO6|GPIO7);
+  gpio_set(GPIOB, GPIO6 | GPIO7);
   // Set baudrate to 100 KHz (standard mode).
   i2c_set_standard_mode(I2C1);
   // Set duty cycle to 50%. For standard mode duty cycle can only be 50%
