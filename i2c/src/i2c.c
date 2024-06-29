@@ -1,14 +1,27 @@
 #include "i2c.h"
 
+#include "FreeRTOS.h"
+#include "queue.h"
+
 #include <libopencm3/stm32/rcc.h>
 #include <libopencm3/stm32/i2c.h>
 #include <libopencm3/stm32/gpio.h>
 
+void i2c_wait_busy(uint32_t i2c);
+void i2c_wait_start(uint32_t i2c);
+void i2c_wait_address(uint32_t i2c);
+void i2c_wait_transfer(uint32_t i2c);
+void i2c_wait_stop(uint32_t i2c);
+inline void i2c_reset(uint32_t i2c);
+
 void i2c1_init(void)
 {
+  // To do:
+  // Pass I2C# as parameter.
+
   // Enable clocks.
   rcc_periph_clock_enable(RCC_I2C1);
-  rcc_periph_clock_enable(GPIOB);
+  rcc_periph_clock_enable(RCC_GPIOB);
 
   // Set I2C SCL and SDA lines.
   // PB6 => SCL1
@@ -47,12 +60,27 @@ inline void i2c_reset(uint32_t i2c)
   return;
 }
 
-void i2c_write(uint32_t i2c, uint8_t * buffer, size_t length)
+void i2c_write(uint32_t i2c, uint8_t address, uint8_t * buffer, size_t length)
 {
+  // Declare local variable(s).
+  uint32_t i;
+  // Send data to I2C device.
+  i2c_wait_busy(i2c);
+  i2c_send_start(i2c);
+  i2c_wait_start(i2c);
+  i2c_send_7bit_address(i2c, address, I2C_WRITE);
+  i2c_wait_address(i2c);
+  for(i = 0; i < length; ++i)
+  {
+    i2c_send_data(i2c, buffer[i]);
+    i2c_wait_transfer(i2c);
+  }
+  i2c_send_stop(i2c);
+  i2c_wait_stop(i2c);
   return;
 }
 
-void i2c_read(uint32_t i2c, uint8_t * buffer, size_t length)
+void i2c_read(uint32_t i2c, uint8_t address, uint8_t * buffer, size_t length)
 {
   return;
 }
@@ -71,6 +99,61 @@ void i2c_read_task(void *args __attribute((unused)))
   while(1)
   {
 	  taskYIELD();
+  }
+  return;
+}
+
+void i2c_wait_busy(uint32_t i2c)
+{
+  while(I2C_SR2(i2c) & I2C_SR2_BUSY)
+  {
+    taskYIELD();
+  }
+  return;
+}
+
+void i2c_wait_start(uint32_t i2c)
+{
+  // Wait for start bit to be set.
+  while(!(I2C_SR1(i2c) & I2C_SR1_SB))
+  {
+    taskYIELD();
+  }
+  return;
+}
+
+void i2c_wait_address(uint32_t i2c)
+{
+  // Wait for address bi to be set.
+  while(!(I2C_SR1(i2c) & I2C_SR1_ADDR))
+  {
+    taskYIELD();
+  }
+  return;
+}
+
+void i2c_wait_transfer(uint32_t i2c)
+{
+  // To do:
+  // I2C_SR1_BTF or I2C_SR1_TxE?
+
+  // Wait for data to be sent.
+  while(!(I2C_SR1(i2c) & I2C_SR1_BTF))
+  {
+    taskYIELD();
+  }
+  return;
+}
+
+void i2c_wait_stop(uint32_t i2c)
+{
+  // To do:
+  // Is this function needed because we i2c_wait_busy at start of transfer?
+
+  // Wait for stop bit to be set.
+  while(!(I2C_SR2(i2c) & I2C_SR2_MSL))
+  {
+    taskYIELD();
   }
   return;
 }
