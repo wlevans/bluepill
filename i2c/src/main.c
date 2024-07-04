@@ -7,6 +7,10 @@
 #include <libopencm3/stm32/rcc.h>
 #include "i2c.h"
 
+// To do:
+// I2C send/receive tasks.
+// Display module.
+
 int main(void)
 {
   // Set up clock.
