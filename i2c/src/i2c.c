@@ -33,6 +33,7 @@ void i2c1_init(void)
 				GPIO6 | GPIO7);
   // Idle SCL and SDA high.
   gpio_set(GPIOB, GPIO6 | GPIO7);
+
   // Set baudrate to 100 KHz (standard mode).
   i2c_set_standard_mode(I2C1);
   // Set duty cycle to 50%. For standard mode duty cycle can only be 50%
@@ -90,7 +91,7 @@ void i2c_write_task(void *args __attribute((unused)))
 {
   while(1)
   {
-	  taskYIELD();
+//	  taskYIELD();
   }
   return;
 }
@@ -99,7 +100,7 @@ void i2c_read_task(void *args __attribute((unused)))
 {
   while(1)
   {
-	  taskYIELD();
+//	  taskYIELD();
   }
   return;
 }
@@ -108,7 +109,7 @@ void i2c_wait_busy(uint32_t i2c)
 {
   while(I2C_SR2(i2c) & I2C_SR2_BUSY)
   {
-    taskYIELD();
+//    taskYIELD();
   }
   return;
 }
@@ -118,7 +119,7 @@ void i2c_wait_start(uint32_t i2c)
   // Wait for start bit to be set.
   while(!(I2C_SR1(i2c) & I2C_SR1_SB))
   {
-    taskYIELD();
+//    taskYIELD();
   }
   return;
 }
@@ -128,7 +129,7 @@ void i2c_wait_address(uint32_t i2c)
   // Wait for address bi to be set.
   while(!(I2C_SR1(i2c) & I2C_SR1_ADDR))
   {
-    taskYIELD();
+//    taskYIELD();
   }
   return;
 }
@@ -141,7 +142,7 @@ void i2c_wait_transfer(uint32_t i2c)
   // Wait for data to be sent.
   while(!(I2C_SR1(i2c) & I2C_SR1_BTF))
   {
-    taskYIELD();
+//    taskYIELD();
   }
   return;
 }
@@ -154,7 +155,7 @@ void i2c_wait_stop(uint32_t i2c)
   // Wait for stop bit to be set.
   while(!(I2C_SR2(i2c) & I2C_SR2_MSL))
   {
-    taskYIELD();
+//    taskYIELD();
   }
   return;
 }
