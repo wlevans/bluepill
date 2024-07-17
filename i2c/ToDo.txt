@@ -1,10 +1,24 @@
 To do:
 
-* #define common display commands.
-* write_line command.
-* read_line command?
 * Decouple I2C/display.
-* Add error detection/correction.
-* Long jump to exception/ISR?
-* I2C send/receive tasks.
-  * Queues?
+
+* Display
+  * init task
+  * #define common display commands.
+  * write_line command.
+  * read_line command?
+
+* I2C
+  * Verify send/receive algorithms (both books).
+  * Add error detection/correction.
+  * Long jump to exception/ISR?
+  * send/receive tasks.
+    * Queues?
+  * Send header
+    * address
+    * length
+    * data
+  * Recieve header
+    * address
+    * length
+    * pointer to buffer
