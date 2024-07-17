@@ -1,0 +1,10 @@
+To do:
+
+* #define common display commands.
+* write_line command.
+* read_line command?
+* Decouple I2C/display.
+* Add error detection/correction.
+* Long jump to exception/ISR?
+* I2C send/receive tasks.
+  * Queues?
