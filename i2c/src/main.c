@@ -20,6 +20,20 @@ int main(void)
   i2c1_init();
   // Set up display.
   display_init();
+  command(0x01);
+  command(0x02);
+  data(0x48);
+  data(0x65);
+  data(0x6C);
+  data(0x6C);
+  data(0x6F);
+  data(0x20);
+  data(0x57);
+  data(0x69);
+  data(0x6C);
+  data(0x6C);
+  data(0x79);
+
   // Create FreeRTOS tasks.
   xTaskCreate(i2c_write_task, "i2c_write_task", 100, NULL, configMAX_PRIORITIES - 1, NULL);
   xTaskCreate(i2c_read_task, "i2c_read_task", 100, NULL, configMAX_PRIORITIES - 1, NULL);

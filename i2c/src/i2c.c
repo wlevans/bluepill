@@ -92,28 +92,6 @@ void i2c_read(uint32_t i2c, uint8_t address, uint8_t * buffer, size_t length)
 
 void i2c_write_task(void *args __attribute((unused)))
 {
-//  command(0x01);
-//  command(0x02);
-//  command(0xA0);
-//  data(0x48);
-//  data(0x65);
-//  data(0x6C);
-//  data(0x6C);
-//  data(0x6F);
-//  data(0x20);
-//  data(0x57);
-//  data(0x69);
-//  data(0x6C);
-//  data(0x6C);
-//  data(0x79);
-//  data(' ');
-//  data('Z');
-
-	for(size_t i = 0; i < 80; ++i)
-	{
-		data(i + 48);
-	}
-
   while(1)
   {
 	  taskYIELD();
