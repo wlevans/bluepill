@@ -22,6 +22,8 @@ int main(void)
   display_init();
   command(0x01);
   command(0x02);
+  data(0x93);
+  data(0x20);
   data(0x48);
   data(0x65);
   data(0x6C);
@@ -33,6 +35,8 @@ int main(void)
   data(0x6C);
   data(0x6C);
   data(0x79);
+  data(0x20);
+  data(0x93);
 
   // Create FreeRTOS tasks.
   xTaskCreate(i2c_write_task, "i2c_write_task", 100, NULL, configMAX_PRIORITIES - 1, NULL);
