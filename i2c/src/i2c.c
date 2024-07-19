@@ -1,8 +1,5 @@
 #include "i2c.h"
 
-// To do:
-#include "display.h"
-
 #include "FreeRTOS.h"
 #include "queue.h"
 
@@ -17,16 +14,21 @@ void i2c_wait_transfer(uint32_t i2c);
 void i2c_wait_stop(uint32_t i2c);
 inline void i2c_reset(uint32_t i2c);
 
-void i2c1_init(void)
+void i2c1_init(uint32_t i2c, i2c_mode_t mode)
 {
   // To do:
   // Pass I2C# as parameter.
   // Add timeout feature.
+  // Add error handling.
+  //   * Check proper I2C.
+  //   * Check proper mode.
 
+  // To do: Select clocks based on which I2C port.
   // Enable clocks.
   rcc_periph_clock_enable(RCC_I2C1);
   rcc_periph_clock_enable(RCC_GPIOB);
 
+  // To do: Select lines based on which I2C port.
   // Set I2C SCL and SDA lines.
   // PB6 => SCL1
   // PB7 => SDA1
@@ -37,24 +39,64 @@ void i2c1_init(void)
   // Idle SCL and SDA high.
   gpio_set(GPIOB, GPIO6 | GPIO7);
 
-  // Set baudrate to 100 KHz (standard mode).
-  i2c_set_standard_mode(I2C1);
-  // Set duty cycle to 50%. For standard mode duty cycle can only be 50%
-  // therefore making this function call uncessary.
-  i2c_set_dutycycle(I2C1, I2C_CCR_DUTY_DIV2);
-  // Set the peripheral clock (PCLK) frequency to 36 MHz.
-  i2c_set_clock_frequency(I2C1, 36);
-  // Set the maximum rise time (TRISE).
-  // TRISE = (PCLK / 1M) + 1.
-  // RM00008 Section 26.6.9.
-  i2c_set_trise(I2C1, 37);
-  // Set the bus clock frequency (control clock)(CCR).
-  // For standard mode baudrate = PCLK / (2 * CCR).
-  // Therefore, CCR = PCLK / (baudrate * 2).
+  // For the bluepill, the I2C peripheral clock frequency (Fpclk) = 36 MHz.
+  i2c_set_clock_frequency(i2c, 36);
+
   // RM00008 Section 26.6.8.
-  i2c_set_ccr(I2C1, 180);
+  // I2C bus clock frequency (control clock) (CCR)
+  //
+  // For standard mode                   : CCR = Fpclk / ( 2 * baudrate) = 180.
+  // For fast mode with 33.3% duty cycle : CCR = Fpclk / ( 3 * baudrate) =  30.
+  // For fast mode with 36% duty cycle   : CCR = Fpclk / (25 * baudrate) =   3.6.
+  //
+  // Note: Do not use a 36% duty cycle since it yeilds a fraction for CCR.
+
+  // RM00008 Section 26.6.9.
+  // I2C rise time (Trise) must be programmed with the maximum SCL rise time
+  // given by the I2C bus specification.
+  // For 100 KHz, the maximum rise time is : 1000 ns.
+  // For 400 KHz, the maximum rise time is : 300 ns.
+  //
+  // The rise time is calculated as:
+  //
+  //  Trise = (Trise_max * Fpclk) + 1
+  //
+  // For standard mode (100 MHz) : Trise = 37.
+  // For fast mode (400 MHz)     : Trise = 11.
+
+  // To do: Replace with switch/case?
+  if(MODE_STANDARD == mode)
+  {
+    // Set baudrate to 100 KHz (standard mode).
+    i2c_set_standard_mode(i2c);
+    // Set CCR.
+    i2c_set_ccr(I2C1, 180);
+    // Set rise time.
+    i2c_set_trise(I2C1, 37);
+  }
+
+  else if(MODE_FAST == mode)
+  {
+    // Set baudrate to 100 KHz (standard mode).
+    i2c_set_fast_mode(i2c);
+    // Set rise time.
+    i2c_set_trise(I2C1, 11);
+    // Set CCR.
+    i2c_set_ccr(I2C1, 30);
+  }
+
+  else
+  {
+	  // To do: Handle error.
+  }
+
+  // Set duty cycle. Will be same for both speed modes.
+  // Note: This is the default value. Added for code clarity.
+  i2c_set_dutycycle(I2C1, I2C_CCR_DUTY_DIV2);
+
   // Enable I2C peripheral.
   i2c_peripheral_enable(I2C1);
+
 }
 
 inline void i2c_reset(uint32_t i2c)
