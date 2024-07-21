@@ -7,6 +7,13 @@
 
 typedef enum
 {
+  I2C_ERROR_OK = 0,
+  I2C_ERROR_PORT,
+  I2C_ERROR_MODE
+} i2c_error_t;
+
+typedef enum
+{
   I2C_PORT_1 = 0,
   I2C_PORT_2,
   I2C_PORT_COUNT
@@ -14,15 +21,9 @@ typedef enum
 
 typedef enum
 {
-	I2C_ERROR_OK = 0,
-	I2C_ERROR_PORT,
-	I2C_ERROR_MODE
-} i2c_error_t;
-
-typedef enum
-{
-  MODE_STANDARD = 0,
-  MODE_FAST
+  I2C_MODE_STANDARD = 0,
+  I2C_MODE_FAST,
+  I2C_MODE_COUNT
 } i2c_mode_t;
 
 i2c_error_t i2c1_init(uint32_t port, i2c_mode_t i2c_mode);

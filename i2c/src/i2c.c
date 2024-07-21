@@ -60,7 +60,7 @@ i2c_error_t i2c1_init(uint32_t i2c_port, i2c_mode_t i2c_mode)
     return(I2C_ERROR_PORT);
   }
   // Test I2C mode.
-  if((MODE_STANDARD != i2c_mode) && (MODE_FAST != i2c_mode))
+  if(!(i2c_port < I2C_MODE_COUNT))
   {
     return(I2C_ERROR_MODE);
   }
@@ -85,14 +85,14 @@ i2c_error_t i2c1_init(uint32_t i2c_port, i2c_mode_t i2c_mode)
   // Determine mode parameters.
   switch(i2c_mode)
   {
-    case MODE_STANDARD:
+    case I2C_MODE_STANDARD:
       // Set baudrate to 100 KHz.
       i2c_set_standard_mode(i2c_parameters.port);
       i2c_parameters.dutycycle = I2C_CCR_DUTY_DIV2;
       i2c_parameters.ccr = 180;
       i2c_parameters.trise = 37;
       break;
-    case MODE_FAST:
+    case I2C_MODE_FAST:
       // Set baudrate to 400 KHz.
       i2c_set_fast_mode(i2c_parameters.port);
       i2c_parameters.dutycycle = I2C_CCR_DUTY_DIV2;

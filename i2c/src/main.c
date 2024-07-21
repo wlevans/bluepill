@@ -17,7 +17,7 @@ int main(void)
   // Set up clock.
   rcc_clock_setup_pll(&rcc_hse_configs[RCC_CLOCK_HSE8_72MHZ]);
   // Set up I2C 1.
-  i2c1_init(I2C_PORT_1, MODE_STANDARD);
+  i2c1_init(I2C_PORT_1, I2C_MODE_STANDARD);
   // Set up display.
   display_init();
   command(0x01);
