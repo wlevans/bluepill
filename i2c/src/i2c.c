@@ -7,6 +7,16 @@
 #include <libopencm3/stm32/i2c.h>
 #include <libopencm3/stm32/gpio.h>
 
+typedef struct
+{
+  uint32_t port;
+  uint32_t dutycycle;
+  uint16_t scl_pin;
+  uint16_t sda_pin;
+  uint16_t ccr;
+  uint16_t trise;
+} i2c_parameters_t;
+
 void i2c_wait_busy(uint32_t i2c);
 void i2c_wait_start(uint32_t i2c);
 void i2c_wait_address(uint32_t i2c);
@@ -14,7 +24,7 @@ void i2c_wait_transfer(uint32_t i2c);
 void i2c_wait_stop(uint32_t i2c);
 inline void i2c_reset(uint32_t i2c);
 
-i2c_error_t i2c1_init(uint32_t port, i2c_mode_t mode)
+i2c_error_t i2c1_init(uint32_t i2c_port, i2c_mode_t i2c_mode)
 {
   // To do:
   // Add timeout feature.
@@ -44,82 +54,68 @@ i2c_error_t i2c1_init(uint32_t port, i2c_mode_t mode)
    * For fast mode (400 MHz)     : Trise = 11.
    */
 
-  // Check port number.
-  if(!(port < NUMBER_OF_PORTS))
+  // Check I2C port number.
+  if(!(i2c_port < I2C_PORT_COUNT))
   {
     return(I2C_ERROR_PORT);
   }
-  // Test mode.
-  if((MODE_STANDARD != mode) && (MODE_FAST != mode))
+  // Test I2C mode.
+  if((MODE_STANDARD != i2c_mode) && (MODE_FAST != i2c_mode))
   {
     return(I2C_ERROR_MODE);
   }
 
-  // Configure port.
-  switch(port)
-  {
-    case I2C1:
-      // Enable clocks.
-      rcc_periph_clock_enable(RCC_I2C1);
-      rcc_periph_clock_enable(RCC_GPIOB);
-      // Set I2C SCL and SDA lines.
-      // PB6 => SCL1
-      // PB7 => SDA1
-      gpio_set_mode(GPIOB,
-	                  GPIO_MODE_OUTPUT_50_MHZ,
-	                  GPIO_CNF_OUTPUT_ALTFN_OPENDRAIN,
-	                  GPIO6 | GPIO7);
-      // Idle SCL and SDA high.
-      gpio_set(GPIOB, GPIO6 | GPIO7);
-      break;
-    case I2C2:
-        // Enable clocks.
-        rcc_periph_clock_enable(RCC_I2C2);
-        rcc_periph_clock_enable(RCC_GPIOB);
-      // Set I2C SCL and SDA lines.
-      // GPIO10 => SCL1
-      // GPIO11 => SDA1
-      gpio_set_mode(GPIOB,
-	                  GPIO_MODE_OUTPUT_50_MHZ,
-	                  GPIO_CNF_OUTPUT_ALTFN_OPENDRAIN,
-					  GPIO10 | GPIO11);
-        // Idle SCL and SDA high.
-        gpio_set(GPIOB, GPIO10 | GPIO11);
-      break;
-    default:
-	  // Should not get here.
-	  break;
-  }
+  // Declare local variable(s).
+  i2c_parameters_t i2c_parameters = {0};
 
-  // Configure port for mode.
-  switch(mode)
+  // Determine port parameters.
+  switch(i2c_port)
+  {
+    case I2C_PORT_1:
+      i2c_parameters.port = I2C1;
+      i2c_parameters.scl_pin = GPIO6;
+      i2c_parameters.sda_pin = GPIO7;
+      break;
+    case I2C_PORT_2:
+      i2c_parameters.port = I2C2;
+      i2c_parameters.scl_pin = GPIO10;
+      i2c_parameters.sda_pin = GPIO11;
+      break;
+  }
+  // Determine mode parameters.
+  switch(i2c_mode)
   {
     case MODE_STANDARD:
-      // Set baudrate to 100 KHz (standard mode).
-      i2c_set_standard_mode(port);
-      // Set CCR.
-      i2c_set_ccr(port, 180);
-      // Set rise time.
-      i2c_set_trise(port, 37);
+      // Set baudrate to 100 KHz.
+      i2c_set_standard_mode(i2c_parameters.port);
+      i2c_parameters.dutycycle = I2C_CCR_DUTY_DIV2;
+      i2c_parameters.ccr = 180;
+      i2c_parameters.trise = 37;
       break;
     case MODE_FAST:
-      // Set baudrate to 100 KHz (standard mode).
-      i2c_set_fast_mode(port);
-      // Set rise time.
-      i2c_set_trise(port, 11);
-      // Set CCR.
-      i2c_set_ccr(port, 30);
-      break;
-    default:
-  	  // Should not get here.
+      // Set baudrate to 400 KHz.
+      i2c_set_fast_mode(i2c_parameters.port);
+      i2c_parameters.dutycycle = I2C_CCR_DUTY_DIV2;
+      i2c_parameters.ccr = 30;
+      i2c_parameters.trise = 11;
       break;
   }
-
-  // For the bluepill, the I2C peripheral clock frequency (Fpclk) = 36 MHz.
-  i2c_set_clock_frequency(port, 36);
-  // Set duty cycle. Will be same for both speed modes.
-  // Note: This is the default value. Added for code clarity.
-  i2c_set_dutycycle(I2C1, I2C_CCR_DUTY_DIV2);
+  // Enable clocks.
+  rcc_periph_clock_enable(RCC_I2C1);
+  rcc_periph_clock_enable(RCC_GPIOB);
+  // For the blue pill, the I2C peripheral clock frequency (Fpclk) = 36 MHz.
+  i2c_set_clock_frequency(i2c_parameters.port, 36);
+  // Set SCL and SDA lines.
+  gpio_set_mode(GPIOB,
+                GPIO_MODE_OUTPUT_50_MHZ,
+                GPIO_CNF_OUTPUT_ALTFN_OPENDRAIN,
+				i2c_parameters.scl_pin | i2c_parameters.sda_pin );
+  // Idle SCL and SDA high.
+  gpio_set(GPIOB, i2c_parameters.scl_pin | i2c_parameters.sda_pin );
+  // Configure port.
+  i2c_set_ccr(i2c_parameters.port, i2c_parameters.ccr);
+  i2c_set_trise(i2c_parameters.port, i2c_parameters.trise);
+  i2c_set_dutycycle(i2c_parameters.port, i2c_parameters.dutycycle);
   // Enable I2C peripheral.
   i2c_peripheral_enable(I2C1);
 

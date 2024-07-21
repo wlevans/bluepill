@@ -4,6 +4,7 @@ To do:
 
 * Display
   * init task
+    * delete when done
   * #define common display commands.
   * write_line command.
   * read_line command?
@@ -11,7 +12,6 @@ To do:
 
 * I2C
   * Verify send/receive algorithms (both books).
-  * Add error detection/correction.
   * Long jump to exception/ISR?
   * send/receive tasks.
     * Queues?
