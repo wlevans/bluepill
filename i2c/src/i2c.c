@@ -33,11 +33,11 @@ i2c_error_t i2c1_init(uint32_t i2c_port, i2c_mode_t i2c_mode)
    * RM00008 Section 26.6.8.
    * I2C bus clock frequency (control clock) (CCR)
    *
-   * For standard mode                   : CCR = Fpclk / ( 2 * baudrate) = 180.
-   * For fast mode with 33.3% duty cycle : CCR = Fpclk / ( 3 * baudrate) =  30.
-   * For fast mode with 36% duty cycle   : CCR = Fpclk / (25 * baudrate) =   3.6.
+   * For standard mode                   : CCR = Fpclk / ( 2 * baud rate) = 180.
+   * For fast mode with 33.3% duty cycle : CCR = Fpclk / ( 3 * baud rate) =  30.
+   * For fast mode with 36% duty cycle   : CCR = Fpclk / (25 * baud rate) = 3.6.
    *
-   * Note: Do not use a 36% duty cycle since it yeilds a fraction for CCR.
+   * Note: Do not use a 36% duty cycle since it yields a fraction for CCR.
    *
    * RM00008 Section 26.6.9.
    * I2C rise time (Trise) must be programmed with the maximum SCL rise time
@@ -86,14 +86,14 @@ i2c_error_t i2c1_init(uint32_t i2c_port, i2c_mode_t i2c_mode)
   switch(i2c_mode)
   {
     case I2C_MODE_STANDARD:
-      // Set baudrate to 100 KHz.
+      // Set baud rate to 100 KHz.
       i2c_set_standard_mode(i2c_parameters.port);
       i2c_parameters.dutycycle = I2C_CCR_DUTY_DIV2;
       i2c_parameters.ccr = 180;
       i2c_parameters.trise = 37;
       break;
     case I2C_MODE_FAST:
-      // Set baudrate to 400 KHz.
+      // Set baud rate to 400 KHz.
       i2c_set_fast_mode(i2c_parameters.port);
       i2c_parameters.dutycycle = I2C_CCR_DUTY_DIV2;
       i2c_parameters.ccr = 30;
@@ -217,10 +217,7 @@ void i2c_wait_transfer(uint32_t i2c)
 
 void i2c_wait_stop(uint32_t i2c)
 {
-  // To do:
-  // Is this function needed because we i2c_wait_busy at start of transfer?
-
-  // Wait for stop bit to be set.
+  // Wait for master/slave stop bit to be clear (slave mode).
   while(!(I2C_SR2(i2c) & I2C_SR2_MSL))
   {
 //    taskYIELD();
