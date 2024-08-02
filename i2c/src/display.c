@@ -9,7 +9,7 @@
 
 uint8_t tx_buffer[2];
 
-void display_init(void)
+void display_init(display_handle_t * display_handle, i2c_handle_t * i2c_handle)
 {
 	command(0x2A);
 	command(0x71);

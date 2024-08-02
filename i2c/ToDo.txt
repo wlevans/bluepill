@@ -13,13 +13,6 @@ To do:
 * I2C
   * Verify send/receive algorithms (both books).
   * Long jump to exception/ISR?
-  * send/receive tasks.
+  * send/receive task.
     * Queues?
-  * Send header
-    * address
-    * length
-    * data
-  * Recieve header
-    * address
-    * length
-    * pointer to buffer
+

@@ -24,7 +24,7 @@ void i2c_wait_transfer(uint32_t i2c);
 void i2c_wait_stop(uint32_t i2c);
 inline void i2c_reset(uint32_t i2c);
 
-i2c_error_t i2c1_init(uint32_t i2c_port, i2c_mode_t i2c_mode)
+i2c_error_t i2c1_init(i2c_handle_t * i2c_handle, uint32_t i2c_port, i2c_mode_t i2c_mode)
 {
   // To do:
   // Add timeout feature.
@@ -68,16 +68,19 @@ i2c_error_t i2c1_init(uint32_t i2c_port, i2c_mode_t i2c_mode)
   // Declare local variable(s).
   i2c_parameters_t i2c_parameters = {0};
 
+  // Instanciate I2C queue.
+  i2c_handle->queue = xQueueCreate(QUEUE_SIZE, sizeof(i2c_transaction_t));
+
   // Determine port parameters.
   switch(i2c_port)
   {
     case I2C_PORT_1:
-      i2c_parameters.port = I2C1;
+      i2c_handle->port = I2C1;
       i2c_parameters.scl_pin = GPIO6;
       i2c_parameters.sda_pin = GPIO7;
       break;
     case I2C_PORT_2:
-      i2c_parameters.port = I2C2;
+      i2c_handle->port = I2C2;
       i2c_parameters.scl_pin = GPIO10;
       i2c_parameters.sda_pin = GPIO11;
       break;
@@ -87,14 +90,14 @@ i2c_error_t i2c1_init(uint32_t i2c_port, i2c_mode_t i2c_mode)
   {
     case I2C_MODE_STANDARD:
       // Set baud rate to 100 KHz.
-      i2c_set_standard_mode(i2c_parameters.port);
+      i2c_set_standard_mode(i2c_handle->port);
       i2c_parameters.dutycycle = I2C_CCR_DUTY_DIV2;
       i2c_parameters.ccr = 180;
       i2c_parameters.trise = 37;
       break;
     case I2C_MODE_FAST:
       // Set baud rate to 400 KHz.
-      i2c_set_fast_mode(i2c_parameters.port);
+      i2c_set_fast_mode(i2c_handle->port);
       i2c_parameters.dutycycle = I2C_CCR_DUTY_DIV2;
       i2c_parameters.ccr = 30;
       i2c_parameters.trise = 11;
@@ -104,7 +107,7 @@ i2c_error_t i2c1_init(uint32_t i2c_port, i2c_mode_t i2c_mode)
   rcc_periph_clock_enable(RCC_I2C1);
   rcc_periph_clock_enable(RCC_GPIOB);
   // For the blue pill, the I2C peripheral clock frequency (Fpclk) = 36 MHz.
-  i2c_set_clock_frequency(i2c_parameters.port, 36);
+  i2c_set_clock_frequency(i2c_handle->port, 36);
   // Set SCL and SDA lines.
   gpio_set_mode(GPIOB,
                 GPIO_MODE_OUTPUT_50_MHZ,
@@ -113,9 +116,9 @@ i2c_error_t i2c1_init(uint32_t i2c_port, i2c_mode_t i2c_mode)
   // Idle SCL and SDA high.
   gpio_set(GPIOB, i2c_parameters.scl_pin | i2c_parameters.sda_pin );
   // Configure port.
-  i2c_set_ccr(i2c_parameters.port, i2c_parameters.ccr);
-  i2c_set_trise(i2c_parameters.port, i2c_parameters.trise);
-  i2c_set_dutycycle(i2c_parameters.port, i2c_parameters.dutycycle);
+  i2c_set_ccr(i2c_handle->port, i2c_parameters.ccr);
+  i2c_set_trise(i2c_handle->port, i2c_parameters.trise);
+  i2c_set_dutycycle(i2c_handle->port, i2c_parameters.dutycycle);
   // Enable I2C peripheral.
   i2c_peripheral_enable(I2C1);
 
@@ -155,22 +158,31 @@ void i2c_read(uint32_t i2c, uint8_t address, uint8_t * buffer, size_t length)
   return;
 }
 
-void i2c_write_task(void *args __attribute((unused)))
+void i2c_transaction_task(void * args)
 {
-  while(1)
-  {
-	  taskYIELD();
-  }
-  return;
-}
+  // Declare local variable(s).
+  i2c_handle_t * i2c_handle = (i2c_handle_t *)args;
+  i2c_transaction_t i2c_transaction;
 
-void i2c_read_task(void *args __attribute((unused)))
-{
   while(1)
   {
-	  taskYIELD();
+    // To do: Is there a stop between write and read?
+    xQueueReceive(i2c_handle->queue, &i2c_transaction, portMAX_DELAY);
+    if(i2c_transaction.write_count > 0)
+    {
+      i2c_write(i2c_handle->port,
+                i2c_transaction.address,
+                i2c_transaction.write_buffer,
+                i2c_transaction.write_count);
+    }
+    if(i2c_transaction.read_count > 0)
+    {
+      i2c_read(i2c_handle->port,
+               i2c_transaction.address,
+               i2c_transaction.read_buffer,
+               i2c_transaction.read_count);
+    }
   }
-  return;
 }
 
 void i2c_wait_busy(uint32_t i2c)
