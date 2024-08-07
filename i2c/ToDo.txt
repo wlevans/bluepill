@@ -11,8 +11,8 @@ To do:
   * left, center, right
 
 * I2C
-  * Verify send/receive algorithms (both books).
+  * i2c_transaction
+  * No I2C tasks.
+  * I2C transaction function.
+    * semaphore
   * Long jump to exception/ISR?
-  * send/receive task.
-    * Queues?
-
