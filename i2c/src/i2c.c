@@ -1,11 +1,20 @@
 #include "i2c.h"
 
+#include <stdlib.h>
+
 #include "FreeRTOS.h"
-#include "queue.h"
+#include "semphr.h"
 
 #include <libopencm3/stm32/rcc.h>
 #include <libopencm3/stm32/i2c.h>
 #include <libopencm3/stm32/gpio.h>
+
+// Define I2C port structure (which is hidden from the user).
+typedef struct i2c_t
+{
+    uint32_t port;
+    SemaphoreHandle_t i2c_semaphore;
+};
 
 typedef struct
 {
@@ -24,7 +33,7 @@ void i2c_wait_transfer(uint32_t i2c);
 void i2c_wait_stop(uint32_t i2c);
 inline void i2c_reset(uint32_t i2c);
 
-i2c_error_t i2c1_init(i2c_handle_t * i2c_handle, uint32_t i2c_port, i2c_mode_t i2c_mode)
+i2c_handle_t i2c1_init(uint32_t i2c_port, i2c_mode_t i2c_mode)
 {
   // To do:
   // Add timeout feature.
@@ -57,19 +66,30 @@ i2c_error_t i2c1_init(i2c_handle_t * i2c_handle, uint32_t i2c_port, i2c_mode_t i
   // Check I2C port number.
   if(!(i2c_port < I2C_PORT_COUNT))
   {
-    return(I2C_ERROR_PORT);
+    return(NULL);
   }
   // Test I2C mode.
   if(!(i2c_port < I2C_MODE_COUNT))
   {
-    return(I2C_ERROR_MODE);
+    return(NULL);
+  }
+
+  // Create I2C handle to be returned.
+  i2c_handle_t i2c_handle = (i2c_handle_t)malloc(sizeof(i2c_handle_t));
+  if(NULL == i2c_handle)
+  {
+    return NULL;
+  }
+  // Create I2C semaphore.
+  i2c_handle->i2c_semaphore = xSemaphoreCreateCounting(SEMPHR_MAX_COUNT, 0);
+  if(NULL == i2c_handle->i2c_semaphore)
+  {
+    free(i2c_handle);
+    return NULL;
   }
 
   // Declare local variable(s).
   i2c_parameters_t i2c_parameters = {0};
-
-  // Instanciate I2C queue.
-  i2c_handle->queue = xQueueCreate(QUEUE_SIZE, sizeof(i2c_transaction_t));
 
   // Determine port parameters.
   switch(i2c_port)
@@ -103,6 +123,7 @@ i2c_error_t i2c1_init(i2c_handle_t * i2c_handle, uint32_t i2c_port, i2c_mode_t i
       i2c_parameters.trise = 11;
       break;
   }
+
   // Enable clocks.
   rcc_periph_clock_enable(RCC_I2C1);
   rcc_periph_clock_enable(RCC_GPIOB);
@@ -112,7 +133,7 @@ i2c_error_t i2c1_init(i2c_handle_t * i2c_handle, uint32_t i2c_port, i2c_mode_t i
   gpio_set_mode(GPIOB,
                 GPIO_MODE_OUTPUT_50_MHZ,
                 GPIO_CNF_OUTPUT_ALTFN_OPENDRAIN,
-				i2c_parameters.scl_pin | i2c_parameters.sda_pin );
+                i2c_parameters.scl_pin | i2c_parameters.sda_pin );
   // Idle SCL and SDA high.
   gpio_set(GPIOB, i2c_parameters.scl_pin | i2c_parameters.sda_pin );
   // Configure port.
@@ -120,9 +141,9 @@ i2c_error_t i2c1_init(i2c_handle_t * i2c_handle, uint32_t i2c_port, i2c_mode_t i
   i2c_set_trise(i2c_handle->port, i2c_parameters.trise);
   i2c_set_dutycycle(i2c_handle->port, i2c_parameters.dutycycle);
   // Enable I2C peripheral.
-  i2c_peripheral_enable(I2C1);
+  i2c_peripheral_enable(i2c_handle->port);
 
-  return(I2C_ERROR_OK);
+  return(i2c_handle);
 }
 
 inline void i2c_reset(uint32_t i2c)
@@ -130,6 +151,12 @@ inline void i2c_reset(uint32_t i2c)
   // Reset I2C peripheral.
   I2C_CR1(i2c) |=  I2C_CR1_SWRST;
   I2C_CR1(i2c) &= ~I2C_CR1_SWRST;
+  return;
+}
+
+
+void i2c_transaction(i2c_handle_t i2c, i2c_transaction_t * transaction)
+{
   return;
 }
 
@@ -156,33 +183,6 @@ void i2c_write(uint32_t i2c, uint8_t address, uint8_t * buffer, size_t length)
 void i2c_read(uint32_t i2c, uint8_t address, uint8_t * buffer, size_t length)
 {
   return;
-}
-
-void i2c_transaction_task(void * args)
-{
-  // Declare local variable(s).
-  i2c_handle_t * i2c_handle = (i2c_handle_t *)args;
-  i2c_transaction_t i2c_transaction;
-
-  while(1)
-  {
-    // To do: Is there a stop between write and read?
-    xQueueReceive(i2c_handle->queue, &i2c_transaction, portMAX_DELAY);
-    if(i2c_transaction.write_count > 0)
-    {
-      i2c_write(i2c_handle->port,
-                i2c_transaction.address,
-                i2c_transaction.write_buffer,
-                i2c_transaction.write_count);
-    }
-    if(i2c_transaction.read_count > 0)
-    {
-      i2c_read(i2c_handle->port,
-               i2c_transaction.address,
-               i2c_transaction.read_buffer,
-               i2c_transaction.read_count);
-    }
-  }
 }
 
 void i2c_wait_busy(uint32_t i2c)

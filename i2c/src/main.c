@@ -1,5 +1,4 @@
 #include <stddef.h>
-#include <stdlib.h>
 
 #include "FreeRTOS.h"
 #include "task.h"
@@ -38,8 +37,7 @@ int main(void)
   // Set up LED.
   led_init();
   // Set up I2C 1.
-  i2c_handle_t * i2c_handle = (i2c_handle_t *)malloc(sizeof(i2c_handle_t));
-  i2c1_init(i2c_handle, I2C_PORT_1, I2C_MODE_STANDARD);
+  i2c_handle_t i2c_handle = i2c1_init(I2C_PORT_1, I2C_MODE_STANDARD);
 
 {
 //  // Set up display.
@@ -65,7 +63,6 @@ int main(void)
 }
 
   // Create FreeRTOS tasks.
-  xTaskCreate(i2c_transaction_task, "i2c_transaction_task", 100, i2c_handle, configMAX_PRIORITIES - 1, NULL);
   xTaskCreate(blink_task, "blink_task", 100, NULL, configMAX_PRIORITIES - 1, NULL);
   // Start FreeRTOS scheduler.
   vTaskStartScheduler();
