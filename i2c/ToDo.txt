@@ -11,8 +11,9 @@ To do:
   * left, center, right
 
 * I2C
-  * i2c_transaction
-  * No I2C tasks.
   * I2C transaction function.
-    * semaphore
+    * Do I want
+      * i2c_transfer
+      * i2c_write, i2c_read, i2c_write_read (more intuitive)
+      * i2c_write, i2c_read (more intuitive)
   * Long jump to exception/ISR?
