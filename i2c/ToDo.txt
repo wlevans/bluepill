@@ -3,12 +3,11 @@ To do:
 * Decouple I2C/display.
 
 * Display
-  * init task
-    * delete when done
   * #define common display commands.
   * write_line command.
   * read_line command?
   * left, center, right
+  * Rework dependency on I2C.
 
 * I2C
   * I2C transaction function.

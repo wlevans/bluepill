@@ -18,7 +18,7 @@ LINKERSCRIPT := ldscript
 # Source files.
 SRCFILES  = ${SRC}/main.c
 SRCFILES += ${SRC}/i2c.c
-# SRCFILES += ${SRC}/display.c
+SRCFILES += ${SRC}/display.c
 SRCFILES += ${SRC}/led.c
 SRCFILES += ${RTOS}/heap_3.c
 SRCFILES += ${RTOS}/list.c

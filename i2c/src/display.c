@@ -1,4 +1,7 @@
+#include <stdlib.h>
 #include "display.h"
+#include "FreeRTOS.h"
+#include "task.h"
 
 // To do:
 // Remove when ready.
@@ -9,7 +12,29 @@
 
 uint8_t tx_buffer[2];
 
-void display_init(display_handle_t * display_handle, i2c_handle_t * i2c_handle)
+typedef struct display_t
+{
+    i2c_handle_t i2c_handle;
+    uint8_t i2c_address;
+};
+
+display_handle_t display_init(i2c_handle_t i2c_handle, uint8_t i2c_address)
+{
+  // Create I2C handle to be returned.
+	display_handle_t display_handle = (display_handle_t)malloc(sizeof(display_t));
+  if(NULL == i2c_handle)
+  {
+	return NULL;
+  }
+  display_handle->i2c_handle = i2c_handle;
+  display_handle->i2c_address = i2c_address;
+
+  // Create FreeRTOS tasks.
+  xTaskCreate(display_init_task, "display_init_task", 100, NULL, configMAX_PRIORITIES - 1, NULL);
+  return display_handle;
+}
+
+void display_init_task(void *args __attribute((unused)))
 {
 	command(0x2A);
 	command(0x71);
@@ -42,7 +67,33 @@ void display_init(display_handle_t * display_handle, i2c_handle_t * i2c_handle)
 	command(0x01);
 	command(0x80);
 	command(0x0C);
+
+	{
+	  // Set up display.
+	  command(0x01);
+	  command(0x02);
+	  command(0xe0);
+	  data(0x93);
+	  data(0x20);
+	  data(0x48);
+	  data(0x65);
+	  data(0x6C);
+	  data(0x6C);
+	  data(0x6F);
+	  data(0x20);
+	  data(0x57);
+	  data(0x69);
+	  data(0x6C);
+	  data(0x6C);
+	  data(0x79);
+	  data(0x20);
+	  data(0x93);
+	}
+
+	// Delete this task.
+	vTaskDelete(NULL);
 }
+
 void command(uint8_t const command)
 {
 	tx_buffer[0] = COMMAND;
@@ -51,6 +102,7 @@ void command(uint8_t const command)
 	i2c_write(I2C1, 0x3C, tx_buffer, 2);
 	return;
 }
+
 void data(uint8_t data)
 {
 	tx_buffer[0] = DATA;

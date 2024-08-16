@@ -4,7 +4,6 @@
 #include <stdint.h>
 #include <stdbool.h>
 #include <libopencm3/stm32/i2c.h>
-#include "FreeRTOS.h"
 
 #define SEMPHR_MAX_COUNT 8
 

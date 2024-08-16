@@ -75,7 +75,7 @@ i2c_handle_t i2c1_init(uint32_t i2c_port, i2c_mode_t i2c_mode)
   }
 
   // Create I2C handle to be returned.
-  i2c_handle_t i2c_handle = (i2c_handle_t)malloc(sizeof(i2c_handle_t));
+  i2c_handle_t i2c_handle = (i2c_handle_t)malloc(sizeof(i2c_t));
   if(NULL == i2c_handle)
   {
     return NULL;

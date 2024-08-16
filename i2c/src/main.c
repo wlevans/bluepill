@@ -7,26 +7,9 @@
 #include <libopencm3/stm32/rcc.h>
 #include "led.h"
 #include "i2c.h"
-// #include "display.h"
+#include "display.h"
 
-static void blink_task(void *args __attribute((unused)))
-{
-  while(1)
-  {
-    led_toggle();
-    if(led_get())
-    {
-      // If LED is on.
-      vTaskDelay(pdMS_TO_TICKS(250));
-    }
-    else
-    {
-      // If LED is off.
-      vTaskDelay(pdMS_TO_TICKS(750));
-    }
-  }
-  return;
-}
+void blink_task(void *args __attribute((unused)));
 // To do:
 // Display module.
 
@@ -38,8 +21,10 @@ int main(void)
   led_init();
   // Set up I2C 1.
   i2c_handle_t i2c_handle = i2c1_init(I2C_PORT_1, I2C_MODE_STANDARD);
+  // Set up display.
+  display_handle_t display_handle = display_init(i2c_handle, 0x3C);
 
-{
+//{
 //  // Set up display.
 //  display_init();
 //  command(0x01);
@@ -60,7 +45,7 @@ int main(void)
 //  data(0x79);
 //  data(0x20);
 //  data(0x93);
-}
+//}
 
   // Create FreeRTOS tasks.
   xTaskCreate(blink_task, "blink_task", 100, NULL, configMAX_PRIORITIES - 1, NULL);
@@ -69,4 +54,23 @@ int main(void)
   // Will only get here if the scheduler fails to start.
   while(1);
   return 0;
+}
+
+void blink_task(void *args __attribute((unused)))
+{
+  while(1)
+  {
+    led_toggle();
+    if(led_get())
+    {
+      // If LED is on.
+      vTaskDelay(pdMS_TO_TICKS(250));
+    }
+    else
+    {
+      // If LED is off.
+      vTaskDelay(pdMS_TO_TICKS(750));
+    }
+  }
+  return;
 }
