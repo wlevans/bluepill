@@ -72,7 +72,7 @@ void display_init_task(void *args __attribute((unused)))
 	  // Set up display.
 	  command(0x01);
 	  command(0x02);
-	  command(0xe0);
+	  command(0xa0);
 	  data(0x93);
 	  data(0x20);
 	  data(0x48);
