@@ -36,78 +36,37 @@ display_handle_t display_init(i2c_handle_t i2c_handle, uint8_t i2c_address)
 
 void display_init_task(void *args __attribute((unused)))
 {
-	command(0x2A);
-	command(0x71);
-	data(0x00);
-	command(0x28);
-	command(0x08);
-	command(0x2A);
-	command(0x79);
-	command(0xD5);
-	command(0x70);
-	command(0x78);
-	command(0x09);
-	command(0x06);
-	command(0x72);
-	data(0x00);
-	command(0x2A);
-	command(0x79);
-	command(0xDA);
-	command(0x10);
-	command(0xDC);
-	command(0x00);
-	command(0x81);
-	command(0x7F);
-	command(0xD9);
-	command(0xF1);
-	command(0xDB);
-	command(0x40);
-	command(0x78);
-	command(0x28);
-	command(0x01);
-	command(0x80);
-	command(0x0C);
-
-	{
-	  // Set up display.
-	  command(0x01);
-	  command(0x02);
-	  command(0xa0);
-	  data(0x93);
-	  data(0x20);
-	  data(0x48);
-	  data(0x65);
-	  data(0x6C);
-	  data(0x6C);
-	  data(0x6F);
-	  data(0x20);
-	  data(0x57);
-	  data(0x69);
-	  data(0x6C);
-	  data(0x6C);
-	  data(0x79);
-	  data(0x20);
-	  data(0x93);
-	}
+	uint8_t commands[] =
+	       {COMMAND, 0x2A, 0x71,
+			DATA, 0x00,
+			COMMAND, 0x28, 0x08, 0x2A, 0x79, 0xD5, 0x70, 0x78, 0x09, 0x06, 0x72,
+			DATA, 0x00,
+			COMMAND, 0x2A, 0x79, 0xDA, 0x10, 0xDC, 0x00, 0x81, 0x7F, 0xD9, 0xF1, 0xDB, 0x40, 0x78, 0x28, 0x01, 0x80, 0x0C};
+	command(commands, 3);
+	data(commands + 3, 1);
+	command(commands + 5, 11);
+	data(commands + 16, 1);
+	command(commands + 18, 18);
+	uint8_t setup[] =
+	       {COMMAND, 0x01, 0x02, 0xE0,
+	        DATA, 0x93, 0x20, 0x48, 0x65, 0x6C, 0x6C, 0x6F, 0x20, 0x57, 0x69, 0x6C, 0x6C, 0x79, 0x20, 0x93};
+	command(setup, 4);
+	data(setup + 4, 16);
 
 	// Delete this task.
 	vTaskDelete(NULL);
 }
 
-void command(uint8_t const command)
+void command(uint8_t const * command, size_t length)
 {
-	tx_buffer[0] = COMMAND;
-	tx_buffer[1] = command;
 	// Send tx_buffer to I2C send (write) task.
-	i2c_write(I2C1, 0x3C, tx_buffer, 2);
+	i2c_write(I2C1, 0x3C, command, length);
 	return;
 }
 
-void data(uint8_t data)
+void data(uint8_t const * command, size_t length)
 {
-	tx_buffer[0] = DATA;
-	tx_buffer[1] = data;
 	// Send tx_buffer to I2C send (write) task;
-	i2c_write(I2C1, 0x3C, tx_buffer, 2);
+	i2c_write(I2C1, 0x3C, command, length);
 	return;
 }

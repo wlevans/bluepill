@@ -8,7 +8,7 @@ To do:
   * read_line command?
   * left, center, right
   * Rework dependency on I2C.
-
+  * Why commands can data cannot be sent with one command.
 * I2C
   * I2C transaction function.
     * Do I want

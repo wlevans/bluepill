@@ -10,8 +10,8 @@ typedef struct display_t display_t;
 typedef display_t * display_handle_t;
 
 display_handle_t display_init(i2c_handle_t i2c_handle, uint8_t i2c_address);
-void command(uint8_t const command);
-void data(uint8_t data);
+void command(uint8_t const * command, size_t length);
+void data(uint8_t const * command, size_t length);
 
 void display_init_task(void *args __attribute((unused)));
 
