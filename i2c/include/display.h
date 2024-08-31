@@ -4,15 +4,13 @@
 #include <stdint.h>
 #include "i2c.h"
 
-// Opaque display port structure (hides the structure from the user).
-typedef struct display_t display_t;
-// Handle (pointer) to the display.
-typedef display_t * display_handle_t;
+typedef enum
+{
+  DISPLAY_ERROR_OK = 0,
+  DISPLAY_ERROR_INVALID,
+} display_error_t;
 
-display_handle_t display_init(i2c_handle_t i2c_handle, uint8_t i2c_address);
-void command(uint8_t const * command, size_t length);
-void data(uint8_t const * command, size_t length);
-
-void display_init_task(void *args __attribute((unused)));
+display_error_t display_init(i2c_interface_t * i2c_interface, uint8_t i2c_address);
+void display_init_task(void * args);
 
 #endif /* INCLUDE_DISPLAY_H_ */

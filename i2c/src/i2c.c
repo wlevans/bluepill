@@ -9,13 +9,6 @@
 #include <libopencm3/stm32/i2c.h>
 #include <libopencm3/stm32/gpio.h>
 
-// Define I2C port structure (which is hidden from the user).
-typedef struct i2c_t
-{
-    uint32_t port;
-    SemaphoreHandle_t i2c_semaphore;
-};
-
 typedef struct
 {
   uint32_t port;
@@ -33,7 +26,7 @@ void i2c_wait_transfer(uint32_t i2c);
 void i2c_wait_stop(uint32_t i2c);
 inline void i2c_reset(uint32_t i2c);
 
-i2c_handle_t i2c1_init(uint32_t i2c_port, i2c_mode_t i2c_mode)
+i2c_error_t i2c1_init(i2c_interface_t * i2c_interface, uint32_t i2c_port, i2c_mode_t i2c_mode)
 {
   // To do:
   // Add timeout feature.
@@ -63,29 +56,20 @@ i2c_handle_t i2c1_init(uint32_t i2c_port, i2c_mode_t i2c_mode)
    * For fast mode (400 MHz)     : Trise = 11.
    */
 
+  // Check I2C structure is not NULL.
+  if(NULL == i2c_interface)
+  {
+    return(I2C_ERROR_INVALID);
+  }
   // Check I2C port number.
   if(!(i2c_port < I2C_PORT_COUNT))
   {
-    return(NULL);
+    return(I2C_ERROR_PORT);
   }
   // Test I2C mode.
   if(!(i2c_port < I2C_MODE_COUNT))
   {
-    return(NULL);
-  }
-
-  // Create I2C handle to be returned.
-  i2c_handle_t i2c_handle = (i2c_handle_t)malloc(sizeof(i2c_t));
-  if(NULL == i2c_handle)
-  {
-    return NULL;
-  }
-  // Create I2C semaphore.
-  i2c_handle->i2c_semaphore = xSemaphoreCreateCounting(SEMPHR_MAX_COUNT, 0);
-  if(NULL == i2c_handle->i2c_semaphore)
-  {
-    free(i2c_handle);
-    return NULL;
+    return(I2C_ERROR_MODE);
   }
 
   // Declare local variable(s).
@@ -95,12 +79,12 @@ i2c_handle_t i2c1_init(uint32_t i2c_port, i2c_mode_t i2c_mode)
   switch(i2c_port)
   {
     case I2C_PORT_1:
-      i2c_handle->port = I2C1;
+      i2c_interface->port = I2C1;
       i2c_parameters.scl_pin = GPIO6;
       i2c_parameters.sda_pin = GPIO7;
       break;
     case I2C_PORT_2:
-      i2c_handle->port = I2C2;
+      i2c_interface->port = I2C2;
       i2c_parameters.scl_pin = GPIO10;
       i2c_parameters.sda_pin = GPIO11;
       break;
@@ -110,25 +94,28 @@ i2c_handle_t i2c1_init(uint32_t i2c_port, i2c_mode_t i2c_mode)
   {
     case I2C_MODE_STANDARD:
       // Set baud rate to 100 KHz.
-      i2c_set_standard_mode(i2c_handle->port);
+      i2c_set_standard_mode(i2c_interface->port);
       i2c_parameters.dutycycle = I2C_CCR_DUTY_DIV2;
       i2c_parameters.ccr = 180;
       i2c_parameters.trise = 37;
       break;
     case I2C_MODE_FAST:
       // Set baud rate to 400 KHz.
-      i2c_set_fast_mode(i2c_handle->port);
+      i2c_set_fast_mode(i2c_interface->port);
       i2c_parameters.dutycycle = I2C_CCR_DUTY_DIV2;
       i2c_parameters.ccr = 30;
       i2c_parameters.trise = 11;
       break;
   }
+  // Point to I2C functions.
+  i2c_interface->read = i2c_read;
+  i2c_interface->write = i2c_write;
 
   // Enable clocks.
   rcc_periph_clock_enable(RCC_I2C1);
   rcc_periph_clock_enable(RCC_GPIOB);
   // For the blue pill, the I2C peripheral clock frequency (Fpclk) = 36 MHz.
-  i2c_set_clock_frequency(i2c_handle->port, 36);
+  i2c_set_clock_frequency(i2c_interface->port, 36);
   // Set SCL and SDA lines.
   gpio_set_mode(GPIOB,
                 GPIO_MODE_OUTPUT_50_MHZ,
@@ -137,13 +124,13 @@ i2c_handle_t i2c1_init(uint32_t i2c_port, i2c_mode_t i2c_mode)
   // Idle SCL and SDA high.
   gpio_set(GPIOB, i2c_parameters.scl_pin | i2c_parameters.sda_pin );
   // Configure port.
-  i2c_set_ccr(i2c_handle->port, i2c_parameters.ccr);
-  i2c_set_trise(i2c_handle->port, i2c_parameters.trise);
-  i2c_set_dutycycle(i2c_handle->port, i2c_parameters.dutycycle);
+  i2c_set_ccr(i2c_interface->port, i2c_parameters.ccr);
+  i2c_set_trise(i2c_interface->port, i2c_parameters.trise);
+  i2c_set_dutycycle(i2c_interface->port, i2c_parameters.dutycycle);
   // Enable I2C peripheral.
-  i2c_peripheral_enable(i2c_handle->port);
+  i2c_peripheral_enable(i2c_interface->port);
 
-  return(i2c_handle);
+  return(I2C_ERROR_OK);
 }
 
 inline void i2c_reset(uint32_t i2c)
@@ -155,32 +142,32 @@ inline void i2c_reset(uint32_t i2c)
 }
 
 
-void i2c_transaction(i2c_handle_t i2c, i2c_transaction_t * transaction)
-{
-  return;
-}
+//void i2c_transaction(i2c_handle_t i2c, i2c_transaction_t * transaction)
+//{
+//  return;
+//}
 
-void i2c_write(uint32_t i2c, uint8_t address, uint8_t * buffer, size_t length)
+void i2c_write(uint32_t port, uint8_t address, uint8_t * buffer, size_t length)
 {
   // Declare local variable(s).
   uint32_t i;
   // Send data to I2C device.
-  i2c_wait_busy(i2c);
-  i2c_send_start(i2c);
-  i2c_wait_start(i2c);
-  i2c_send_7bit_address(i2c, address, I2C_WRITE);
-  i2c_wait_address(i2c);
+  i2c_wait_busy(port);
+  i2c_send_start(port);
+  i2c_wait_start(port);
+  i2c_send_7bit_address(port, address, I2C_WRITE);
+  i2c_wait_address(port);
   for(i = 0; i < length; ++i)
   {
-    i2c_send_data(i2c, buffer[i]);
-    i2c_wait_transfer(i2c);
+    i2c_send_data(port, buffer[i]);
+    i2c_wait_transfer(port);
   }
-  i2c_send_stop(i2c);
-  i2c_wait_stop(i2c);
+  i2c_send_stop(port);
+  i2c_wait_stop(port);
   return;
 }
 
-void i2c_read(uint32_t i2c, uint8_t address, uint8_t * buffer, size_t length)
+void i2c_read(uint32_t port, uint8_t address, uint8_t * buffer, size_t length)
 {
   return;
 }
