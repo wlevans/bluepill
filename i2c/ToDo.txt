@@ -1,13 +1,10 @@
 To do:
 
-* Decouple I2C/display.
-
 * Display
   * #define common display commands.
   * write_line command.
   * read_line command?
   * left, center, right
-  * Rework dependency on I2C.
   * Why commands can data cannot be sent with one command.
 * I2C
   * I2C transaction function.

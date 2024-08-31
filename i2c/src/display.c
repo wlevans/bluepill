@@ -30,7 +30,7 @@ display_error_t display_init(i2c_interface_t * i2c_interface, uint8_t i2c_addres
   display->i2c_address = i2c_address;
 
   // Create FreeRTOS tasks.
-  xTaskCreate(display_init_task, "display_init_task", 100, (void *)display, configMAX_PRIORITIES - 1, NULL);
+  xTaskCreate(display_init_task, "display_init_task", 100, (void *)display, 1, NULL);
 
   return(DISPLAY_ERROR_OK);
 }
@@ -51,15 +51,6 @@ void display_init_task(void * args)
   i2c_interface->write(i2c_interface->port, display->i2c_address, init_commands_2, sizeof(init_commands_2));
   i2c_interface->write(i2c_interface->port, display->i2c_address, init_data, sizeof(init_data));
   i2c_interface->write(i2c_interface->port, display->i2c_address, init_commands_3, sizeof(init_commands_3));
-
-  // To do: Remove test code.
-  {
-    uint8_t setup_command[] = {COMMAND, 0x01, 0x02, 0xE0};
-    uint8_t setup_data[] = {DATA, 0x93, 0x20, 0x48, 0x65, 0x6C, 0x6C, 0x6F, 0x20, 0x57, 0x69, 0x6C, 0x6C, 0x79, 0x20, 0x93};
-
-    i2c_interface->write(i2c_interface->port, display->i2c_address, setup_command, sizeof(setup_command));
-    i2c_interface->write(i2c_interface->port, display->i2c_address, setup_data, sizeof(setup_data));
-  }
 
   // Free up argument.
   vPortFree(args);

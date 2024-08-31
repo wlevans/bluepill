@@ -91,7 +91,7 @@
 #define configCPU_CLOCK_HZ		72000000
 #define configSYSTICK_CLOCK_HZ	configCPU_CLOCK_HZ / 8 /* vTaskDelay() fix */
 #define configTICK_RATE_HZ		250
-#define configMAX_PRIORITIES		1
+#define configMAX_PRIORITIES		2
 #define configMINIMAL_STACK_SIZE	128
 #define configTOTAL_HEAP_SIZE		17 * 1024
 #define configMAX_TASK_NAME_LEN		16
