@@ -4,6 +4,9 @@
 #include <stdint.h>
 #include "i2c.h"
 
+#define COMMAND 0x00
+#define DATA    0x40
+
 typedef enum
 {
   DISPLAY_ERROR_OK = 0,
