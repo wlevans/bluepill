@@ -13,3 +13,5 @@ To do:
       * i2c_write, i2c_read, i2c_write_read (more intuitive)
       * i2c_write, i2c_read (more intuitive)
   * Long jump to exception/ISR?
+  * Time outs?
+
