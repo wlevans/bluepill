@@ -58,3 +58,27 @@ void display_init_task(void * args)
   // Delete this task.
   vTaskDelete(NULL);
 }
+
+void display_task(void * args)
+{
+  // Get task arguments.
+  i2c_interface_t * i2c_interface = (i2c_interface_t *)args;
+  size_t i = 0;
+
+  uint8_t setup_command[] = {COMMAND, 0x01, 0x02, 0x80};
+  uint8_t setup_data[] = {DATA, 0x93, 0x20, 0x48, 0x65, 0x6C, 0x6C, 0x6F, 0x20, 0x57, 0x69, 0x6C, 0x6C, 0x79, 0x20, 0x93};
+
+  while(1)
+  {
+    {
+      for(i = 0; i < 4; ++i)
+      {
+        setup_command[3] = (0x80 | (i << 5)) + i;
+        i2c_interface->write(i2c_interface->port, DISPLAY_ADDRESS, setup_command, sizeof(setup_command));
+        i2c_interface->write(i2c_interface->port, DISPLAY_ADDRESS, setup_data, sizeof(setup_data));
+        vTaskDelay(pdMS_TO_TICKS(500));
+      }
+    }
+  }
+  return;
+}
