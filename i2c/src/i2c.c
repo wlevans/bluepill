@@ -23,6 +23,7 @@ void i2c_wait_busy(uint32_t i2c);
 void i2c_wait_start(uint32_t i2c);
 void i2c_wait_address(uint32_t i2c);
 void i2c_wait_transfer(uint32_t i2c);
+void i2c_wait_receive(uint32_t i2c);
 void i2c_wait_stop(uint32_t i2c);
 inline void i2c_reset(uint32_t i2c);
 
@@ -153,13 +154,19 @@ void i2c_write(uint32_t port, uint8_t address, uint8_t * buffer, size_t length)
   uint32_t i;
   // Send data to I2C device.
   i2c_wait_busy(port);
+
+  // To do: must ACK faluire be cleared?
+  // Clear ACK failure.
+  I2C_SR1(port) &= ~I2C_SR1_AF;
+
+
   i2c_send_start(port);
   i2c_wait_start(port);
   i2c_send_7bit_address(port, address, I2C_WRITE);
   i2c_wait_address(port);
   for(i = 0; i < length; ++i)
   {
-    i2c_send_data(port, buffer[i]);
+    i2c_send_data(port, *(buffer + i));
     i2c_wait_transfer(port);
   }
   i2c_send_stop(port);
@@ -169,6 +176,32 @@ void i2c_write(uint32_t port, uint8_t address, uint8_t * buffer, size_t length)
 
 void i2c_read(uint32_t port, uint8_t address, uint8_t * buffer, size_t length)
 {
+  // Declare local variable(s).
+  uint32_t i;
+  // Receive data from I2C device.
+  i2c_wait_busy(port);
+
+  // To do: must ACK faluire be cleared?
+  // Clear ACK failure.
+  I2C_SR1(port) &= ~I2C_SR1_AF;
+
+  i2c_enable_ack(port);
+  i2c_send_start(port);
+  i2c_wait_start(port);
+  i2c_send_7bit_address(port, address, I2C_READ);
+  i2c_wait_address(port);
+  for(i = 0; i < length; ++i)
+  {
+    // To do: Debug why only first byte is received.
+    if(i == length)
+    {
+      i2c_disable_ack(port);
+    }
+    i2c_wait_receive(port);
+    *(buffer + i) = i2c_get_data(port);
+  }
+  i2c_send_stop(port);
+  i2c_wait_stop(port);
   return;
 }
 
@@ -208,6 +241,16 @@ void i2c_wait_transfer(uint32_t i2c)
 
   // Wait for data to be sent.
   while(!(I2C_SR1(i2c) & I2C_SR1_BTF))
+  {
+    taskYIELD();
+  }
+  return;
+}
+
+void i2c_wait_receive(uint32_t i2c)
+{
+  // Wait for data to be received.
+  while(!(I2C_SR1(i2c) & I2C_SR1_RxNE))
   {
     taskYIELD();
   }
