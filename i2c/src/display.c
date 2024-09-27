@@ -70,33 +70,17 @@ void display_task(void * args)
   i2c_interface->write(i2c_interface->port, DISPLAY_ADDRESS, setup_command, sizeof(setup_command));
   i2c_interface->write(i2c_interface->port, DISPLAY_ADDRESS, setup_data, sizeof(setup_data));
 
-  uint8_t eeprom_write[] = {0x00, 0x00, 0x93, 0x20, 0x48, 0x65, 0x6C, 0x6C, 0x6F, 0x20, 0x57, 0x69, 0x6C, 0x6C, 0x79, 0x20, 0x93};
-  uint8_t epprom_read[sizeof(eeprom_write) - 1] = {0};
-  epprom_read[0] = DATA;
-
-  i2c_interface->write(i2c_interface->port, 0xA0 >> 1, eeprom_write, sizeof(eeprom_write));
-  vTaskDelay(pdMS_TO_TICKS(100));
-//  i2c_interface->write(i2c_interface->port, 0xA0 >> 1, eeprom_write, 2);
-//  vTaskDelay(pdMS_TO_TICKS(100));
-//  i2c_interface->read(i2c_interface->port, 0xA0 >> 1, epprom_read + 1, sizeof(epprom_read) - 1);
-//  vTaskDelay(pdMS_TO_TICKS(100));
-  i2c_write_read(i2c_interface->port, 0xA0 >> 1, eeprom_write, 2, epprom_read + 1, sizeof(epprom_read) - 1);
-
-  setup_command[1] = 0xA0;
-  i2c_interface->write(i2c_interface->port, DISPLAY_ADDRESS, setup_command, 2);
-  i2c_interface->write(i2c_interface->port, DISPLAY_ADDRESS, epprom_read, sizeof(epprom_read));
-
   while(1)
   {
-//    {
-//      for(i = 0; i < 4; ++i)
-//      {
-//        setup_command[3] = (0x80 | (i << 5)) + i;
-//        i2c_interface->write(i2c_interface->port, DISPLAY_ADDRESS, setup_command, sizeof(setup_command));
-//        i2c_interface->write(i2c_interface->port, DISPLAY_ADDRESS, setup_data, sizeof(setup_data));
+    {
+      for(i = 0; i < 4; ++i)
+      {
+        setup_command[3] = (0x80 | (i << 5)) + i;
+        i2c_interface->write(i2c_interface->port, DISPLAY_ADDRESS, setup_command, sizeof(setup_command));
+        i2c_interface->write(i2c_interface->port, DISPLAY_ADDRESS, setup_data, sizeof(setup_data));
         vTaskDelay(pdMS_TO_TICKS(500));
-//      }
-//    }
+      }
+    }
   }
   return;
 }
