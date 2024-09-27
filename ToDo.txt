@@ -9,4 +9,6 @@ To do:
 * I2C
   * Long jump to exception/ISR?
   * Time outs?
-
+* Bluepill
+  * Move board code to bluepill directory.
+  * Make static library.
