@@ -76,10 +76,11 @@ void display_task(void * args)
 
   i2c_interface->write(i2c_interface->port, 0xA0 >> 1, eeprom_write, sizeof(eeprom_write));
   vTaskDelay(pdMS_TO_TICKS(100));
-  i2c_interface->write(i2c_interface->port, 0xA0 >> 1, eeprom_write, 2);
-  vTaskDelay(pdMS_TO_TICKS(100));
-  i2c_interface->read(i2c_interface->port, 0xA0 >> 1, epprom_read + 1, sizeof(epprom_read) - 1);
-  vTaskDelay(pdMS_TO_TICKS(100));
+//  i2c_interface->write(i2c_interface->port, 0xA0 >> 1, eeprom_write, 2);
+//  vTaskDelay(pdMS_TO_TICKS(100));
+//  i2c_interface->read(i2c_interface->port, 0xA0 >> 1, epprom_read + 1, sizeof(epprom_read) - 1);
+//  vTaskDelay(pdMS_TO_TICKS(100));
+  i2c_write_read(i2c_interface->port, 0xA0 >> 1, eeprom_write, 2, epprom_read + 1, sizeof(epprom_read) - 1);
 
   setup_command[1] = 0xA0;
   i2c_interface->write(i2c_interface->port, DISPLAY_ADDRESS, setup_command, 2);

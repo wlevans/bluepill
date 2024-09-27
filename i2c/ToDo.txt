@@ -5,13 +5,8 @@ To do:
   * write_line command.
   * read_line command?
   * left, center, right
-  * Why commands can data cannot be sent with one command.
+  * Why commands and data cannot be sent with one command.
 * I2C
-  * I2C transaction function.
-    * Do I want
-      * i2c_transfer
-      * i2c_write, i2c_read, i2c_write_read (more intuitive)
-      * i2c_write, i2c_read (more intuitive)
   * Long jump to exception/ISR?
   * Time outs?
 
