@@ -10,11 +10,11 @@ STFLASH = $(shell which st-flash)
 BINARY = uart_echo
 
 # Include path(s).
+LINKERSCRIPT := ldscript
 SRC          := src
+RTOS         := rtos
 LIBOPENCM3   := ../libopencm3
 BLUEPILL     := ../bluepill
-RTOS         := ../rtos
-LINKERSCRIPT := ldscript
 
 # Source files.
 SRCFILES  = ${SRC}/main.c
@@ -82,9 +82,9 @@ TGT_CPPFLAGS += -Wshadow
 TGT_CPPFLAGS += -Wredundant-decls
 TGT_CPPFLAGS += -I.
 TGT_CPPFLAGS += -I./${SRC}
+TGT_CPPFLAGS += -I./${RTOS}
 TGT_CPPFLAGS += -I./$(LIBOPENCM3)/include
 TGT_CPPFLAGS += -I./${BLUEPILL}
-TGT_CPPFLAGS += -I./${RTOS}
 TGT_CPPFLAGS += -I./include
 
 # Linker flags.

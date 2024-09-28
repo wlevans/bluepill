@@ -10,20 +10,20 @@ STFLASH = $(shell which st-flash)
 BINARY = blinky
 
 # Include path(s).
+LINKERSCRIPT := ldscript
 SRC          := src
+RTOS         := rtos
 LIBOPENCM3   := ../libopencm3
 BLUEPILL     := ../bluepill
-RTOS         := ../rtos
-LINKERSCRIPT := ldscript
 
 # Source files.
 SRCFILES  = ${SRC}/main.c
-SRCFILES += ${BLUEPILL}/led.c
 SRCFILES += ${RTOS}/heap_3.c
 SRCFILES += ${RTOS}/list.c
 SRCFILES += ${RTOS}/port.c
 SRCFILES += ${RTOS}/queue.c
 SRCFILES += ${RTOS}/tasks.c
+SRCFILES += ${BLUEPILL}/led.c
 
 # Object file(s) to build.
 TEMP1 = $(patsubst %.c,%.o,$(SRCFILES))
@@ -81,9 +81,9 @@ TGT_CPPFLAGS += -Wshadow
 TGT_CPPFLAGS += -Wredundant-decls
 TGT_CPPFLAGS += -I.
 TGT_CPPFLAGS += -I./${SRC}
+TGT_CPPFLAGS += -I./${RTOS}
 TGT_CPPFLAGS += -I./${LIBOPENCM3}/include
 TGT_CPPFLAGS += -I./${BLUEPILL}
-TGT_CPPFLAGS += -I./${RTOS}
 TGT_CPPFLAGS += -I./include
 
 # Linker flags.
