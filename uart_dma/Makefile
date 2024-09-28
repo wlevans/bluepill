@@ -11,14 +11,15 @@ BINARY = uart_dma
 
 # Include path(s).
 LIBOPENCM3   := ../libopencm3
-RTOS         := rtos
+BLUEPILL     := ../bluepill
+RTOS         := ../rtos
 SRC          := src
 LINKERSCRIPT := ldscript
 
 # Source files.
 SRCFILES  = ${SRC}/main.c
-SRCFILES += ${SRC}/uart_dma.c
 SRCFILES += ${SRC}/ring_buffer.c
+SRCFILES += ${BLUEPILL}/uart_dma.c
 SRCFILES += ${RTOS}/heap_3.c
 SRCFILES += ${RTOS}/list.c
 SRCFILES += ${RTOS}/port.c
@@ -83,6 +84,7 @@ TGT_CPPFLAGS += -Wshadow
 TGT_CPPFLAGS += -Wredundant-decls
 TGT_CPPFLAGS += -I.
 TGT_CPPFLAGS += -I./$(LIBOPENCM3)/include
+TGT_CPPFLAGS += -I./${BLUEPILL}
 TGT_CPPFLAGS += -I./${RTOS}
 TGT_CPPFLAGS += -I./${SRC}
 TGT_CPPFLAGS += -I./include

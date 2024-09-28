@@ -3,40 +3,26 @@
 # Include compiler tools.
 include arm-none-eabi.mk
 
-# ST-Link utility.
-STFLASH = $(shell which st-flash)
-
 # Output file name.
-BINARY = uart
+NAME = libbluepill
+SNAME = $(NAME).a
 
 # Include path(s).
-LIBOPENCM3   := ../libopencm3
-BLUEPILL     := ../bluepill
-RTOS         := ../rtos
-SRC          := src
-LINKERSCRIPT := ldscript
+LIBOPENCM3  := ../libopencm3
 
 # Source files.
-SRCFILES  = ${SRC}/main.c
-SRCFILES += ${BLUEPILL}/uart.c
-SRCFILES += ${RTOS}/heap_3.c
-SRCFILES += ${RTOS}/list.c
-SRCFILES += ${RTOS}/port.c
-SRCFILES += ${RTOS}/queue.c
-SRCFILES += ${RTOS}/tasks.c
+SRCFILES  = led.c
 
 # Object file(s) to build.
 TEMP1 = $(patsubst %.c,%.o,$(SRCFILES))
 TEMP2 = $(patsubst %.cpp,%.o,$(TEMP1))
 OBJS  = $(patsubst %.asm,%.o,$(TEMP2))
 
-# Define linker script.
-LDSCRIPT = $(LINKERSCRIPT)/stm32f103c8t6.ld
-
 # Define architecture (chip).
 LIBNAME   = opencm3_stm32f1
 DEFS      = -DSTM32F1
-FLASHSIZE = --flash=128k
+
+# CFLAGS += -Wall -Werror -fPIC -ansi -pedantic
 
 # Architecture (chip) specific flags.
 ARCH_FLAGS  = -mcpu=cortex-m3
@@ -49,7 +35,7 @@ ASFLAGS  = -mthumb
 ASFLAGS += -mcpu=cortex-m3
 
 # Common flags.
-OPT    := -O0
+OPT    := -Os
 DEBUG  := -g
 CSTD   ?= -std=c99
 CXXSTD ?= -std=c++11
@@ -57,7 +43,7 @@ CXXSTD ?= -std=c++11
 # Target C flags.
 TGT_CFLAGS += $(OPT) $(DEBUG) $(CSTD)
 TGT_CFLAGS += $(ARCH_FLAGS)
-TGT_CFLAGS += -specs=nano.specs
+TFT_CFLAGS += -specs=nano.specs
 TFT_CFLAGS += -Wimpliciit-function-declaration
 TGT_CFLAGS += -Wredundant-decls
 TGT_CFLAGS += -Wmissing-prototypes
@@ -81,10 +67,8 @@ TGT_CPPFLAGS += -Wshadow
 TGT_CPPFLAGS += -Wredundant-decls
 TGT_CPPFLAGS += -I.
 TGT_CPPFLAGS += -I./$(LIBOPENCM3)/include
-TGT_CPPFLAGS += -I./${BLUEPILL}
-TGT_CPPFLAGS += -I./${RTOS}
-TGT_CPPFLAGS += -I./${SRC}
-TGT_CPPFLAGS += -I./include
+
+#TGT_CPPFLAGS += -Wall -Werror -fPIC
 
 # Linker flags.
 TGT_LDFLAGS += --static
@@ -103,32 +87,14 @@ LDLIBS += -Wl,--start-group -lc -lgcc -lnosys -Wl,--end-group
 LDLIBS += -L$(LIBOPENCM3)/lib
 LDLIBS += -l$(LIBNAME)
 
-.SUFFIXES: .elf .bin .hex .srec .list .map .images
-.SECONDEXPANSION:
-.SECONDARY:
 
-all : elf
-elf  : $(BINARY).elf
-bin  : $(BINARY).bin
-hex  : $(BINARY).hex
-srec : $(BINARY).srec
-list : $(BINARY).list
+ARFLAGS = rv
 
-%.bin : %.elf
-	$(OBJCOPY) -Obinary $(*).elf $(*).bin
 
-%.hex : %.elf
-	$(OBJCOPY) -Oihex $(*).elf $(*).hex
+all : lib
 
-%.srec : %.elf
-	$(OBJCOPY) -Osrec $(*).elf $(*).srec
+lib : $(SNAME)
 
-%.list : %.elf
-	$(OBJCOPY) -S $(*).elf $(*).list
-
-%.elf %.map : $(OBJS) $(LDSCRIPT)
-	$(CC) $(TGT_LDFLAGS) $(LDFLAGS) $(OBJS) $(LDLIBS) -o $(*).elf
-	$(SIZE) $(BINARY).elf
 
 %.o : %.c
 	$(CC) $(TGT_CFLAGS) $(CFLAGS) $(TGT_CPPFLAGS) $(CPPFLAGS) -o $(*).o -c $(*).c
@@ -142,17 +108,9 @@ list : $(BINARY).list
 %.o : %.asm
 	$(AS) $(ASFLAGS) -o $*.o -c $<
 
+$(SNAME) : ${OBJS}
+	# Generate static library.
+	$(AR) $(ARFLAGS) ${SNAME}
+
 clean :
-	$(RM) *.o *.d generated.* $(OBJS) $(patsubst %.o,%.d,$(OBJS))
-
-clobber : clean
-	$(RM) -f *.elf *.bin *.hex *srec *.list *.map
-
-# Flash device.
-flash : $(BINARY).bin
-	$(STFLASH) $(FLASHSIZE) --reset write $(BINARY).bin 0x08000000
-
-.PHONY : images clean elf bin hex srec list all
-
-# What does this do?
--include $(OBJS:.o=.d)
+	${RM} -f *.o *.d $(NAME).*
