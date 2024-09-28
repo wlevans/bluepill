@@ -10,10 +10,10 @@ STFLASH = $(shell which st-flash)
 BINARY = blinky
 
 # Include path(s).
+SRC          := src
 LIBOPENCM3   := ../libopencm3
 BLUEPILL     := ../bluepill
 RTOS         := ../rtos
-SRC          := src
 LINKERSCRIPT := ldscript
 
 # Source files.
@@ -57,8 +57,8 @@ CXXSTD ?= -std=c++11
 # Target C flags.
 TGT_CFLAGS += $(OPT) $(DEBUG) $(CSTD)
 TGT_CFLAGS += $(ARCH_FLAGS)
-TFT_CFLAGS += -specs=nano.specs
-TFT_CFLAGS += -Wimpliciit-function-declaration
+TGT_CFLAGS += -specs=nano.specs
+TGT_CFLAGS += -Wimplicit-function-declaration
 TGT_CFLAGS += -Wredundant-decls
 TGT_CFLAGS += -Wmissing-prototypes
 TGT_CFLAGS += -Wstrict-prototypes
@@ -80,10 +80,10 @@ TGT_CPPFLAGS += -Wextra
 TGT_CPPFLAGS += -Wshadow
 TGT_CPPFLAGS += -Wredundant-decls
 TGT_CPPFLAGS += -I.
+TGT_CPPFLAGS += -I./${SRC}
 TGT_CPPFLAGS += -I./${LIBOPENCM3}/include
 TGT_CPPFLAGS += -I./${BLUEPILL}
 TGT_CPPFLAGS += -I./${RTOS}
-TGT_CPPFLAGS += -I./${SRC}
 TGT_CPPFLAGS += -I./include
 
 # Linker flags.

@@ -10,15 +10,15 @@ STFLASH = $(shell which st-flash)
 BINARY = uart_dma
 
 # Include path(s).
+SRC          := src
 LIBOPENCM3   := ../libopencm3
 BLUEPILL     := ../bluepill
 RTOS         := ../rtos
-SRC          := src
+MISC         := ../misc
 LINKERSCRIPT := ldscript
 
 # Source files.
 SRCFILES  = ${SRC}/main.c
-SRCFILES += ${SRC}/ring_buffer.c
 SRCFILES += ${BLUEPILL}/uart_dma.c
 SRCFILES += ${RTOS}/heap_3.c
 SRCFILES += ${RTOS}/list.c
@@ -27,6 +27,7 @@ SRCFILES += ${RTOS}/queue.c
 SRCFILES += ${RTOS}/tasks.c
 SRCFILES += ${RTOS}/event_groups.c
 SRCFILES += ${RTOS}/timers.c
+SRCFILES += ${MISC}/ring_buffer.c
 
 # Object file(s) to build.
 TEMP1 = $(patsubst %.c,%.o,$(SRCFILES))
@@ -61,7 +62,7 @@ CXXSTD ?= -std=c++11
 TGT_CFLAGS += $(OPT) $(DEBUG) $(CSTD)
 TGT_CFLAGS += $(ARCH_FLAGS)
 TGT_CFLAGS += -specs=nano.specs
-TFT_CFLAGS += -Wimpliciit-function-declaration
+TGT_CFLAGS += -Wimplicit-function-declaration
 TGT_CFLAGS += -Wredundant-decls
 TGT_CFLAGS += -Wmissing-prototypes
 TGT_CFLAGS += -Wstrict-prototypes
@@ -83,10 +84,11 @@ TGT_CPPFLAGS += -Wextra
 TGT_CPPFLAGS += -Wshadow
 TGT_CPPFLAGS += -Wredundant-decls
 TGT_CPPFLAGS += -I.
+TGT_CPPFLAGS += -I./${SRC}
 TGT_CPPFLAGS += -I./$(LIBOPENCM3)/include
 TGT_CPPFLAGS += -I./${BLUEPILL}
 TGT_CPPFLAGS += -I./${RTOS}
-TGT_CPPFLAGS += -I./${SRC}
+TGT_CPPFLAGS += -I./${MISC}
 TGT_CPPFLAGS += -I./include
 
 # Linker flags.

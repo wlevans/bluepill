@@ -10,17 +10,18 @@ STFLASH = $(shell which st-flash)
 BINARY = i2c
 
 # Include path(s).
+SRC          := src
 LIBOPENCM3   := ../libopencm3
 BLUEPILL     := ../bluepill
 RTOS         := ../rtos
-SRC          := src
+MISC         := ../misc
 LINKERSCRIPT := ldscript
 
 # Source files.
 SRCFILES  = ${SRC}/main.c
-SRCFILES += ${SRC}/display.c
 SRCFILES += ${BLUEPILL}/i2c.c
 SRCFILES += ${BLUEPILL}/led.c
+SRCFILES += ${MISC}/display.c
 SRCFILES += ${RTOS}/heap_3.c
 SRCFILES += ${RTOS}/list.c
 SRCFILES += ${RTOS}/port.c
@@ -60,7 +61,7 @@ CXXSTD ?= -std=c++11
 TGT_CFLAGS += $(OPT) $(DEBUG) $(CSTD)
 TGT_CFLAGS += $(ARCH_FLAGS)
 TGT_CFLAGS += -specs=nano.specs
-TFT_CFLAGS += -Wimpliciit-function-declaration
+TGT_CFLAGS += -Wimplicit-function-declaration
 TGT_CFLAGS += -Wredundant-decls
 TGT_CFLAGS += -Wmissing-prototypes
 TGT_CFLAGS += -Wstrict-prototypes
@@ -82,10 +83,11 @@ TGT_CPPFLAGS += -Wextra
 TGT_CPPFLAGS += -Wshadow
 TGT_CPPFLAGS += -Wredundant-decls
 TGT_CPPFLAGS += -I.
+TGT_CPPFLAGS += -I./${SRC}
 TGT_CPPFLAGS += -I./$(LIBOPENCM3)/include
 TGT_CPPFLAGS += -I./${BLUEPILL}
 TGT_CPPFLAGS += -I./${RTOS}
-TGT_CPPFLAGS += -I./${SRC}
+TGT_CPPFLAGS += -I./${MISC}
 TGT_CPPFLAGS += -I./include
 
 # Linker flags.
