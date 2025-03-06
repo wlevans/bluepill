@@ -7,6 +7,7 @@
 #include <libopencm3/stm32/usart.h>
 #include <libopencm3/cm3/nvic.h>
 
+#include "bluepill.h"
 #include "uart_int.h"
 #include "led.h"
 
@@ -15,8 +16,8 @@ static void process_cmd(void *args __attribute((unused)));
 
 int main(void)
 {
-  // Set up clock.
-  rcc_clock_setup_pll(&rcc_hse_configs[RCC_CLOCK_HSE8_72MHZ]);
+  // Initialize bluepill.
+  bluepill_init();
   // Initialize LED.
   led_init();
   // Initialize USART 1.

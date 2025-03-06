@@ -18,6 +18,7 @@ BLUEPILL     := ../bluepill
 
 # Source files.
 SRCFILES  = ${SRC}/main.c
+SRCFILES += ${BLUEPILL}/bluepill.c
 SRCFILES += ${BLUEPILL}/uart.c
 SRCFILES += ${RTOS}/heap_3.c
 SRCFILES += ${RTOS}/list.c

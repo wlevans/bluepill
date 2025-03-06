@@ -4,6 +4,7 @@
 #include "task.h"
 
 #include <libopencm3/stm32/rcc.h>
+#include "bluepill.h"
 #include "led.h"
 
 static void blink(void *args __attribute((unused)))
@@ -27,15 +28,13 @@ static void blink(void *args __attribute((unused)))
 
 int main(void)
 {
-  // Set up clock.
-  rcc_clock_setup_pll(&rcc_hse_configs[RCC_CLOCK_HSE8_72MHZ]);
-
+  // Initialize bluepill.
+  bluepill_init();
   // Initialize LED.
   led_init();
 
   // Create FreeRTOS task.
   xTaskCreate(blink, "blink", 100, NULL, configMAX_PRIORITIES - 1, NULL);
-
   // Start FreeRTOS scheduler.
   vTaskStartScheduler();
 

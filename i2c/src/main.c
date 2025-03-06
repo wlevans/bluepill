@@ -5,6 +5,7 @@
 #include "queue.h"
 
 #include <libopencm3/stm32/rcc.h>
+#include "bluepill.h"
 #include "led.h"
 #include "i2c.h"
 #include "display.h"
@@ -16,9 +17,9 @@ int main(void)
   // Declare local variables.
   static i2c_interface_t i2c_interface;
 
-  // Set up clock.
-  rcc_clock_setup_pll(&rcc_hse_configs[RCC_CLOCK_HSE8_72MHZ]);
-  // Set up LED.
+  // Initialize bluepill.
+  bluepill_init();
+  // Initialzie LED.
   led_init();
   // Set up I2C 1.
   i2c1_init(&i2c_interface, I2C_PORT_1, I2C_MODE_STANDARD);

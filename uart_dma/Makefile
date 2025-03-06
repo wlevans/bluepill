@@ -19,6 +19,7 @@ MISC         := ../misc
 
 # Source files.
 SRCFILES  = ${SRC}/main.c
+SRCFILES += ${BLUEPILL}/bluepill.c
 SRCFILES += ${BLUEPILL}/uart_dma.c
 SRCFILES += ${RTOS}/heap_3.c
 SRCFILES += ${RTOS}/list.c

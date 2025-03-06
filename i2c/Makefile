@@ -19,6 +19,7 @@ MISC         := ../misc
 
 # Source files.
 SRCFILES  = ${SRC}/main.c
+SRCFILES += ${BLUEPILL}/bluepill.c
 SRCFILES += ${BLUEPILL}/i2c.c
 SRCFILES += ${BLUEPILL}/led.c
 SRCFILES += ${MISC}/display.c

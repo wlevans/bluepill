@@ -23,6 +23,7 @@ SRCFILES += ${RTOS}/list.c
 SRCFILES += ${RTOS}/port.c
 SRCFILES += ${RTOS}/queue.c
 SRCFILES += ${RTOS}/tasks.c
+SRCFILES += ${BLUEPILL}/bluepill.c
 SRCFILES += ${BLUEPILL}/led.c
 
 # Object file(s) to build.
