@@ -28,8 +28,8 @@ static void blink(void *args __attribute((unused)))
 
 int main(void)
 {
-  // Initialize bluepill.
-  bluepill_init();
+  // Initialize board.
+  board_init();
   // Initialize LED.
   led_init();
 

@@ -17,8 +17,8 @@ int main(void)
   // Declare local variables.
   static i2c_interface_t i2c_interface;
 
-  // Initialize bluepill.
-  bluepill_init();
+  // Initialize board.
+  board_init();
   // Initialzie LED.
   led_init();
   // Set up I2C 1.

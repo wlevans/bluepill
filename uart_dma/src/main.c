@@ -12,7 +12,7 @@
 
 int main(void)
 {
-  // Initialize bluepill.
+  // Initialize board.
   board_init();
   // Initialize USART 1 and DMA.
   uart1_init();

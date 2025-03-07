@@ -16,8 +16,8 @@ static void process_cmd(void *args __attribute((unused)));
 
 int main(void)
 {
-  // Initialize bluepill.
-  bluepill_init();
+  // Initialize board.
+  board_init();
   // Initialize LED.
   led_init();
   // Initialize USART 1.
