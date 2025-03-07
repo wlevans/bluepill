@@ -11,3 +11,5 @@ To do:
   * Time outs?
 * Bluepill
   * Make static library.
+* 1 Wire
+* Dual EE Click
