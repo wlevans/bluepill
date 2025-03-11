@@ -12,7 +12,7 @@ BINARY = blinky
 # Include path(s).
 LINKERSCRIPT := ldscript
 SRC          := src
-RTOS         := rtos
+RTOS         := ../rtos
 LIBOPENCM3   := ../libopencm3
 BLUEPILL     := ../bluepill
 
