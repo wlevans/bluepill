@@ -12,7 +12,7 @@ BINARY = uart_dma
 # Include path(s).
 LINKERSCRIPT := ldscript
 SRC          := src
-RTOS         := ../rtos
+RTOS         := ../FreeRTOS
 LIBOPENCM3   := ../libopencm3
 BLUEPILL     := ../bluepill
 MISC         := ../misc
