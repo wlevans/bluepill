@@ -3,7 +3,7 @@
 
 #include <stdint.h>
 #include <stdbool.h>
-#include <libopencm3/stm32/i2c.h>
+#include <stddef.h>
 
 #define SEMPHR_MAX_COUNT 8
 
@@ -31,7 +31,6 @@ typedef enum
 
 typedef struct
 {
-
   uint8_t * write_buffer;
   uint8_t * read_buffer;
   uint8_t address;
