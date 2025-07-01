@@ -4,6 +4,7 @@
 
 #include "bluepill.h"
 #include "uart.h"
+#include <libopencm3/stm32/usart.h>
 
 uint32_t uart = 0;
 static QueueHandle_t uart_q;

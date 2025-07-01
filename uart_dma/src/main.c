@@ -4,9 +4,6 @@
 #include "task.h"
 #include "event_groups.h"
 
-#include <libopencm3/stm32/rcc.h>
-#include <libopencm3/cm3/nvic.h>
-
 #include "bluepill.h"
 #include "uart_dma.h"
 
