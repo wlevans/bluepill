@@ -12,7 +12,7 @@ BINARY = uart_echo
 # Include path(s).
 LINKERSCRIPT := ldscript
 SRC          := src
-RTOS         := ../FreeRTOS
+RTOS         := ../middleware/FreeRTOS
 LIBOPENCM3   := ../libopencm3
 BLUEPILL     := ../bluepill
 

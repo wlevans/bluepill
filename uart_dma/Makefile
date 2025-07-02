@@ -12,10 +12,10 @@ BINARY = uart_dma
 # Include path(s).
 LINKERSCRIPT := ldscript
 SRC          := src
-RTOS         := ../FreeRTOS
+RTOS         := ../middleware/FreeRTOS
 LIBOPENCM3   := ../libopencm3
 BLUEPILL     := ../bluepill
-MISC         := ../misc
+MISC         := ../middleware
 
 # Source files.
 SRCFILES  = ${SRC}/main.c
