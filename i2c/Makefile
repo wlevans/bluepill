@@ -14,14 +14,14 @@ LINKERSCRIPT := ldscript
 SRC          := src
 RTOS         := ../middleware/FreeRTOS
 LIBOPENCM3   := ../libopencm3
-BLUEPILL     := ../bluepill
+BSP          := ../bsp
 MISC         := ../middleware
 
 # Source files.
 SRCFILES  = ${SRC}/main.c
-SRCFILES += ${BLUEPILL}/bluepill.c
-SRCFILES += ${BLUEPILL}/i2c.c
-SRCFILES += ${BLUEPILL}/led.c
+SRCFILES += ${BSP}/bsp.c
+SRCFILES += ${BSP}/i2c.c
+SRCFILES += ${BSP}/led.c
 SRCFILES += ${MISC}/display.c
 SRCFILES += ${RTOS}/heap_3.c
 SRCFILES += ${RTOS}/list.c
@@ -87,7 +87,7 @@ TGT_CPPFLAGS += -I.
 TGT_CPPFLAGS += -I./${SRC}
 TGT_CPPFLAGS += -I./${RTOS}
 TGT_CPPFLAGS += -I./$(LIBOPENCM3)/include
-TGT_CPPFLAGS += -I./${BLUEPILL}
+TGT_CPPFLAGS += -I./${BSP}
 TGT_CPPFLAGS += -I./${MISC}
 TGT_CPPFLAGS += -I./include
 

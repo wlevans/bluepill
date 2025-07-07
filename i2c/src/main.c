@@ -5,7 +5,7 @@
 #include "queue.h"
 
 #include <libopencm3/stm32/rcc.h>
-#include "bluepill.h"
+#include "bsp.h"
 #include "led.h"
 #include "i2c.h"
 #include "display.h"

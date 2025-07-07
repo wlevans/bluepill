@@ -2,7 +2,7 @@
 #include "task.h"
 #include "queue.h"
 
-#include "bluepill.h"
+#include "bsp.h"
 #include "uart.h"
 #include <libopencm3/stm32/usart.h>
 

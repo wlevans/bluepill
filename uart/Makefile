@@ -14,12 +14,12 @@ LINKERSCRIPT := ldscript
 SRC          := src
 RTOS         := ../middleware/FreeRTOS
 LIBOPENCM3   := ../libopencm3
-BLUEPILL     := ../bluepill
+BSP          := ../bsp
 
 # Source files.
 SRCFILES  = ${SRC}/main.c
-SRCFILES += ${BLUEPILL}/bluepill.c
-SRCFILES += ${BLUEPILL}/uart.c
+SRCFILES += ${BSP}/bsp.c
+SRCFILES += ${BSP}/uart.c
 SRCFILES += ${RTOS}/heap_3.c
 SRCFILES += ${RTOS}/list.c
 SRCFILES += ${RTOS}/port.c
@@ -84,7 +84,7 @@ TGT_CPPFLAGS += -I.
 TGT_CPPFLAGS += -I./${SRC}
 TGT_CPPFLAGS += -I./${RTOS}
 TGT_CPPFLAGS += -I./$(LIBOPENCM3)/include
-TGT_CPPFLAGS += -I./${BLUEPILL}
+TGT_CPPFLAGS += -I./${BSP}
 TGT_CPPFLAGS += -I./include
 
 # Linker flags.

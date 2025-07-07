@@ -3,7 +3,7 @@
 #include "FreeRTOS.h"
 #include "task.h"
 
-#include "bluepill.h"
+#include "bsp.h"
 #include "led.h"
 
 static void blink(void *args __attribute((unused)))

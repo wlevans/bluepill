@@ -4,7 +4,7 @@
 #include "task.h"
 #include "event_groups.h"
 
-#include "bluepill.h"
+#include "bsp.h"
 #include "uart_dma.h"
 
 int main(void)
